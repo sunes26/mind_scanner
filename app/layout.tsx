@@ -289,6 +289,9 @@ export default function RootLayout({
         {/* 테마 색상 */}
         <meta name="theme-color" content="#FBBF24" />
         <meta name="msapplication-TileColor" content="#FBBF24" />
+
+        {/* Google AdSense 소유권 확인 */}
+        <meta name="google-adsense-account" content="ca-pub-2394800264580446" />
       </head>
       <body className="min-h-screen flex flex-col">
         <AdSenseScript />
