@@ -8,10 +8,10 @@ const BASE_URL = 'https://mindscanner.site'
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
   title: {
-    default: '속마음 스캐너 - 카톡 대화 분석으로 알아보는 우리 사이 | AI 연애 심리 테스트',
+    default: '속마음 스캐너 - AI 카톡 분석으로 썸과 호감도 확인',
     template: '%s | 속마음 스캐너',
   },
-  description: '카카오톡 대화 내용을 AI가 분석해서 썸인지 어장인지 알려드려요. 답장 시간, 대화 패턴, 이모티콘 사용량을 분석하여 호감도와 관계의 주도권을 정확히 파악해보세요. 무료 연애 심리 테스트!',
+  description: '카톡 대화를 AI가 분석해 썸인지 어장인지 알려드려요. 답장 속도, 이모티콘, 대화 패턴으로 호감도 측정. 무료!',
   keywords: [
     '카톡 대화 분석',
     '카카오톡 분석',
