@@ -358,11 +358,6 @@ export default function HomeScreen({ onFileUpload, onError }: HomeScreenProps) {
             </div>
           </div>
         </div>
-
-        <ul className="mt-6 flex justify-center gap-4 text-xs text-gray-500 font-bold opacity-70" aria-label="보안 및 성능 특징">
-          <li className="flex items-center gap-1">개인정보 보호</li>
-          <li className="flex items-center gap-1">3초 빠른 분석</li>
-        </ul>
       </section>
       </div>
 
