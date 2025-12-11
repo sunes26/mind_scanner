@@ -75,12 +75,12 @@ export const metadata: Metadata = {
     creator: '@mindscanner',
     site: '@mindscanner',
   },
-  // verification: {
-  //   google: 'YOUR_GOOGLE_VERIFICATION_CODE', // Google Search Console 인증 코드 발급 후 활성화
-  //   other: {
-  //     'naver-site-verification': 'YOUR_NAVER_VERIFICATION_CODE', // 네이버 서치어드바이저
-  //   },
-  // },
+  verification: {
+    // google: 'YOUR_GOOGLE_VERIFICATION_CODE', // Google Search Console 인증 코드 발급 후 활성화
+    other: {
+      'naver-site-verification': 'ca7d9e9325192484a6872107f38420227b08f97f',
+    },
+  },
   alternates: {
     canonical: BASE_URL,
   },
