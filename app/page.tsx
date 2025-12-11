@@ -1,13 +1,16 @@
 'use client'
 
 import { useState } from 'react'
+import dynamic from 'next/dynamic'
 import Header from '@/components/Header'
 import HomeScreen from '@/components/HomeScreen'
 import LoadingScreen from '@/components/LoadingScreen'
-import ResultScreen from '@/components/ResultScreen'
-import ErrorModal from '@/components/ErrorModal'
-import ShareModal from '@/components/ShareModal'
 import { ChatData, AnalysisResult, AppError } from '@/types'
+
+// 코드 스플리팅: 필요한 시점에만 로드
+const ResultScreen = dynamic(() => import('@/components/ResultScreen'))
+const ErrorModal = dynamic(() => import('@/components/ErrorModal'))
+const ShareModal = dynamic(() => import('@/components/ShareModal'))
 
 type Screen = 'home' | 'loading' | 'result'
 

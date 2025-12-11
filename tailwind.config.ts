@@ -9,8 +9,8 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        display: ['Jua', 'sans-serif'],
-        sans: ['Noto Sans KR', 'sans-serif'],
+        display: ['var(--font-jua)', 'sans-serif'],
+        sans: ['var(--font-noto-sans-kr)', 'sans-serif'],
       },
       animation: {
         'heart-beat': 'heartBeat 1.5s infinite',
@@ -27,5 +27,9 @@ const config: Config = {
     },
   },
   plugins: [],
+  // 프로덕션 빌드 최적화
+  future: {
+    hoverOnlyWhenSupported: true,
+  },
 }
 export default config

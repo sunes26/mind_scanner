@@ -16,9 +16,10 @@ const nextConfig = {
   // 성능 최적화
   compress: true, // Gzip 압축 활성화
 
-  // 보안 헤더
+  // 보안 헤더 및 캐싱
   async headers() {
     return [
+      // 보안 헤더
       {
         source: '/:path*',
         headers: [
@@ -41,6 +42,45 @@ const nextConfig = {
           {
             key: 'Permissions-Policy',
             value: 'camera=(), microphone=(), geolocation=()'
+          },
+        ],
+      },
+      // 정적 리소스 캐싱 (이미지, 폰트, 아이콘)
+      {
+        source: '/icons/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
+        source: '/_next/static/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      // 폰트 캐싱
+      {
+        source: '/fonts/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      // 이미지 캐싱
+      {
+        source: '/:path*.{jpg,jpeg,png,gif,ico,svg,webp}',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
           },
         ],
       },
