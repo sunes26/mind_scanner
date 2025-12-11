@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next'
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = 'https://mindscanner.com' // 실제 도메인으로 변경 필요
+  const baseUrl = 'https://mindscanner.site'
 
   return {
     rules: [

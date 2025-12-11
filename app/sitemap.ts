@@ -2,7 +2,7 @@ import { MetadataRoute } from 'next'
 import { blogPosts } from './blog/blogData'
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://mindscanner.com' // 실제 도메인으로 변경 필요
+  const baseUrl = 'https://mindscanner.site'
   const currentDate = new Date()
 
   // 블로그 포스트 sitemap 엔트리 생성

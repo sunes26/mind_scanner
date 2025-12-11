@@ -7,9 +7,9 @@ export interface ShareData {
 
 // 공유 URL 생성
 export function generateShareUrl(data: ShareData): string {
-  const baseUrl = typeof window !== 'undefined' 
-    ? window.location.origin 
-    : 'https://mindscanner.com'
+  const baseUrl = typeof window !== 'undefined'
+    ? window.location.origin
+    : 'https://mindscanner.site'
   
   const params = new URLSearchParams({
     score: data.score.toString(),
@@ -23,9 +23,9 @@ export function generateShareUrl(data: ShareData): string {
 
 // OG 이미지 URL 생성
 export function generateOgImageUrl(data: ShareData): string {
-  const baseUrl = typeof window !== 'undefined' 
-    ? window.location.origin 
-    : 'https://mindscanner.com'
+  const baseUrl = typeof window !== 'undefined'
+    ? window.location.origin
+    : 'https://mindscanner.site'
   
   const params = new URLSearchParams({
     score: data.score.toString(),

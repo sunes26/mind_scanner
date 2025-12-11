@@ -3,7 +3,7 @@ import Script from 'next/script'
 import AdSenseScript from '@/components/ads/AdSenseScript'
 import './globals.css'
 
-const BASE_URL = 'https://mindscanner.com' // 실제 도메인으로 변경 필요
+const BASE_URL = 'https://mindscanner.site'
 
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),

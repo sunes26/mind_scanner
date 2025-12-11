@@ -4,7 +4,7 @@ export const siteConfig = {
   name: '속마음 스캐너',
   title: '속마음 스캐너 - AI 카톡 대화 분석',
   description: '카카오톡 대화 내용을 AI가 분석해서 썸인지 어장인지 알려드려요.',
-  url: 'https://mindscanner.com', // 실제 도메인으로 변경
+  url: 'https://mindscanner.site',
   ogImage: '/api/og',
   links: {
     twitter: 'https://twitter.com/mindscanner',
