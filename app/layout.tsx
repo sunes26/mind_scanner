@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Script from 'next/script'
 import { Noto_Sans_KR, Jua } from 'next/font/google'
+import { GoogleAnalytics } from '@next/third-parties/google'
 import AdSenseScript from '@/components/ads/AdSenseScript'
 import './globals.css'
 
@@ -292,6 +293,7 @@ export default function RootLayout({
       <body className="min-h-screen flex flex-col">
         <AdSenseScript />
         {children}
+        <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID || ''} />
       </body>
     </html>
   )

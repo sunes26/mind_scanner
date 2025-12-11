@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@next/third-parties": "^16.0.8",
     "@vercel/og": "^0.8.5",
     "chart.js": "^4.4.1",
     "framer-motion": "^12.23.26",

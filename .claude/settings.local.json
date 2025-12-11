@@ -10,7 +10,9 @@
       "Bash(npm run build:*)",
       "Bash(node --version:*)",
       "Bash(npx tsc:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(test:*)",
+      "Bash(git add:*)"
     ]
   }
 }
