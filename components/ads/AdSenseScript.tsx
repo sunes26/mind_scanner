@@ -15,7 +15,7 @@ export default function AdSenseScript() {
       async
       src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${clientId}`}
       crossOrigin="anonymous"
-      strategy="afterInteractive"
+      strategy="lazyOnload"
       onError={(e) => {
         console.error('AdSense script failed to load:', e)
       }}

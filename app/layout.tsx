@@ -1,9 +1,27 @@
 import type { Metadata } from 'next'
 import Script from 'next/script'
+import { Noto_Sans_KR, Jua } from 'next/font/google'
 import AdSenseScript from '@/components/ads/AdSenseScript'
 import './globals.css'
 
 const BASE_URL = 'https://mindscanner.site'
+
+// 폰트 최적화
+const notoSansKr = Noto_Sans_KR({
+  subsets: ['latin'],
+  weight: ['400', '700', '900'],
+  display: 'swap',
+  preload: true,
+  variable: '--font-noto-sans-kr',
+})
+
+const jua = Jua({
+  subsets: ['latin'],
+  weight: '400',
+  display: 'swap',
+  preload: true,
+  variable: '--font-jua',
+})
 
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
@@ -247,18 +265,18 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="ko">
+    <html lang="ko" className={`${notoSansKr.variable} ${jua.variable}`}>
       <head>
         {/* JSON-LD 구조화된 데이터 */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
-        
+
         {/* 카카오 SDK */}
         <Script
           src="https://t1.kakaocdn.net/kakao_js_sdk/2.6.0/kakao.min.js"
-          strategy="beforeInteractive"
+          strategy="lazyOnload"
         />
 
         {/* Favicon */}
@@ -266,7 +284,7 @@ export default function RootLayout({
         <link rel="icon" href="/icon.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <link rel="manifest" href="/manifest.json" />
-        
+
         {/* 테마 색상 */}
         <meta name="theme-color" content="#FBBF24" />
         <meta name="msapplication-TileColor" content="#FBBF24" />
