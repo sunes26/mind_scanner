@@ -1,6 +1,7 @@
 'use client'
 
 import { ScanLine } from 'lucide-react'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 interface HeaderProps {
   currentScreen?: 'home' | 'loading' | 'result'
@@ -8,10 +9,12 @@ interface HeaderProps {
 }
 
 export default function Header({ currentScreen = 'home', onNavigateHome }: HeaderProps) {
+  const { t } = useLanguage()
+
   const handleNavigationClick = (sectionId: string, sectionName: string) => {
     // 결과 화면에서는 확인창 표시
     if (currentScreen === 'result') {
-      if (window.confirm(`${sectionName}을 보려면 홈화면으로 돌아가야 됩니다.\n현재 결과는 사라집니다.`)) {
+      if (window.confirm(t.header.confirmNavigation.replace('{section}', sectionName))) {
         if (onNavigateHome) {
           onNavigateHome()
         }
@@ -33,37 +36,37 @@ export default function Header({ currentScreen = 'home', onNavigateHome }: Heade
           className="flex items-center gap-2 cursor-pointer"
           onClick={() => {
             if (currentScreen === 'result' && onNavigateHome) {
-              if (window.confirm('홈으로 돌아가시겠어요?\n현재 결과는 사라집니다.')) {
+              if (window.confirm(t.header.confirmBack)) {
                 onNavigateHome()
               }
             } else {
               window.location.reload()
             }
           }}
-          aria-label="홈으로 돌아가기"
+          aria-label={t.header.backToHome}
         >
           <div className="bg-white border-2 border-black rounded-full p-1.5 shadow-[2px_2px_0px_0px_black]" aria-hidden="true">
             <ScanLine className="text-black w-6 h-6" />
           </div>
           <span className="text-2xl text-black tracking-wide mt-1 font-display">
-            속마음 스캐너
+            {t.header.title}
           </span>
         </button>
 
         <nav className="hidden md:flex gap-4" aria-label="메인 네비게이션">
           <button
             className="font-bold hover:underline"
-            aria-label="사용법 보기"
-            onClick={() => handleNavigationClick('export-guide-heading', '사용법')}
+            aria-label={t.header.howToUse}
+            onClick={() => handleNavigationClick('export-guide-heading', t.header.howToUse)}
           >
-            사용법
+            {t.header.howToUse}
           </button>
           <button
             className="font-bold hover:underline"
-            aria-label="자주 묻는 질문 보기"
-            onClick={() => handleNavigationClick('faq-heading', '자주 묻는 질문')}
+            aria-label={t.header.faq}
+            onClick={() => handleNavigationClick('faq-heading', t.header.faq)}
           >
-            자주 묻는 질문
+            {t.header.faq}
           </button>
         </nav>
       </div>

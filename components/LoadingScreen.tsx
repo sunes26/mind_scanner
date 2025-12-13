@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { ChatData, AnalysisResult, AppError } from '@/types'
+import { detectLanguage } from '@/utils/language'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 interface LoadingScreenProps {
   chatData: ChatData
@@ -9,27 +11,10 @@ interface LoadingScreenProps {
   onError: (error: AppError) => void
 }
 
-const loadingMessages = [
-  '📂 대화 파일 로딩 중...',
-  '📊 총 메시지 개수 계산 중...',
-  '👥 참여자 정보 분석 중...',
-  '🕐 타임스탬프 파싱 중...',
-  '⏰ 24시간 활동 패턴 파악 중...',
-  '⚡ 평균 답장 속도 계산 중...',
-  '😊 이모티콘 사용 패턴 분석 중...',
-  '💬 메시지 길이 통계 분석 중...',
-  '❓ 질문 빈도 측정 중...',
-  '📈 대화 주도권 분석 중...',
-  '🎭 대화 스타일 파악 중...',
-  '💡 소통 방식 분석 중...',
-  '🔍 관계 역학 분석 중...',
-  '🧠 AI 성향 타입 매칭 중...',
-  '💭 상호 인식 패턴 분석 중...',
-  '🎯 개별 맞춤 조언 생성 중...',
-  '✍️ 최종 리포트 작성 중...'
-]
-
 export default function LoadingScreen({ chatData, onComplete, onError }: LoadingScreenProps) {
+  const { t } = useLanguage()
+  const loadingMessages = t.loading.messages
+
   const [step, setStep] = useState(0)
   const [progress, setProgress] = useState(0)
   const [detailText, setDetailText] = useState(loadingMessages[0])
@@ -55,6 +40,9 @@ export default function LoadingScreen({ chatData, onComplete, onError }: Loading
 
   const performAnalysis = async (interval: NodeJS.Timeout) => {
     try {
+      // Detect user's language
+      const language = detectLanguage()
+
       // Call actual AI analysis API
       const response = await fetch('/api/analyze', {
         method: 'POST',
@@ -66,6 +54,7 @@ export default function LoadingScreen({ chatData, onComplete, onError }: Loading
           p1: chatData.p1,
           p2: chatData.p2,
           analysis: chatData.analysis,
+          language, // Add language parameter
         }),
       })
 
@@ -92,7 +81,7 @@ export default function LoadingScreen({ chatData, onComplete, onError }: Loading
       clearInterval(interval)
 
       // 분석 완료 메시지 표시
-      setDetailText('✨ 분석 완료!')
+      setDetailText(`✨ ${t.loading.complete}`)
       setProgress(100)
 
       // 1초 후 결과 화면으로 전환

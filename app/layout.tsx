@@ -3,6 +3,7 @@ import Script from 'next/script'
 import { Noto_Sans_KR, Jua } from 'next/font/google'
 import { GoogleAnalytics } from '@next/third-parties/google'
 import AdSenseScript from '@/components/ads/AdSenseScript'
+import { LanguageProvider } from '@/contexts/LanguageContext'
 import './globals.css'
 
 const BASE_URL = 'https://mindscanner.site'
@@ -294,9 +295,11 @@ export default function RootLayout({
         <meta name="google-adsense-account" content="ca-pub-2394800264580446" />
       </head>
       <body className="min-h-screen flex flex-col">
-        <AdSenseScript />
-        {children}
-        <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID || ''} />
+        <LanguageProvider>
+          <AdSenseScript />
+          {children}
+          <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID || ''} />
+        </LanguageProvider>
       </body>
     </html>
   )

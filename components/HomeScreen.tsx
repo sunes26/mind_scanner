@@ -13,6 +13,7 @@ import {
   isValidMimeType
 } from '@/utils/validation'
 import ResultPageAd from '@/components/ads/ResultPageAd'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 interface HomeScreenProps {
   onFileUpload: (data: ChatData) => void
@@ -20,6 +21,7 @@ interface HomeScreenProps {
 }
 
 export default function HomeScreen({ onFileUpload, onError }: HomeScreenProps) {
+  const { t } = useLanguage()
   const [isDragging, setIsDragging] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
 
@@ -46,9 +48,9 @@ export default function HomeScreen({ onFileUpload, onError }: HomeScreenProps) {
     if (!securityCheck.isSafe) {
       onError({
         type: 'PARSE_ERROR',
-        title: '파일에 위험한 코드가 감지되었어요',
-        message: '정상적인 카카오톡 대화 파일을 업로드해주세요.',
-        suggestion: '카카오톡에서 다시 내보낸 파일을 사용해주세요.',
+        title: t.validationErrors.maliciousContent.title,
+        message: t.validationErrors.maliciousContent.message,
+        suggestion: t.validationErrors.maliciousContent.suggestion,
         canRetry: false
       })
       return null
@@ -58,9 +60,9 @@ export default function HomeScreen({ onFileUpload, onError }: HomeScreenProps) {
     if (!isValidTextFile(text)) {
       onError({
         type: 'FILE_FORMAT',
-        title: '올바른 텍스트 파일이 아니에요',
-        message: '카카오톡에서 내보낸 .txt 파일만 분석할 수 있어요.',
-        suggestion: '파일이 손상되었거나 바이너리 파일일 수 있습니다. 카카오톡에서 다시 내보내주세요.',
+        title: t.validationErrors.invalidTextFile.title,
+        message: t.validationErrors.invalidTextFile.message,
+        suggestion: t.validationErrors.invalidTextFile.suggestion,
         canRetry: false
       })
       return null
@@ -118,9 +120,9 @@ export default function HomeScreen({ onFileUpload, onError }: HomeScreenProps) {
     if (rawP1.length > MESSAGE_VALIDATION.MAX_NAME_LENGTH || rawP2.length > MESSAGE_VALIDATION.MAX_NAME_LENGTH) {
       onError({
         type: 'PARSE_ERROR',
-        title: '닉네임이 너무 길어요',
-        message: `${MESSAGE_VALIDATION.MAX_NAME_LENGTH}글자 이하의 닉네임만 분석할 수 있어요.`,
-        suggestion: '카카오톡 프로필 이름을 짧게 변경한 후 다시 내보내주세요.',
+        title: t.validationErrors.nicknameTooLong.title,
+        message: t.validationErrors.nicknameTooLong.message.replace('{maxLength}', MESSAGE_VALIDATION.MAX_NAME_LENGTH.toString()),
+        suggestion: t.validationErrors.nicknameTooLong.suggestion,
         canRetry: false
       })
       return null
@@ -153,9 +155,9 @@ export default function HomeScreen({ onFileUpload, onError }: HomeScreenProps) {
     if (!isValidMimeType(file.type)) {
       onError({
         type: 'FILE_FORMAT',
-        title: '올바른 파일 형식이 아니에요',
-        message: '텍스트 파일(.txt)만 분석할 수 있어요.',
-        suggestion: '카카오톡에서 내보낸 .txt 파일을 사용해주세요.',
+        title: t.validationErrors.invalidMimeType.title,
+        message: t.validationErrors.invalidMimeType.message,
+        suggestion: t.validationErrors.invalidMimeType.suggestion,
         canRetry: false,
       })
       return
@@ -171,9 +173,9 @@ export default function HomeScreen({ onFileUpload, onError }: HomeScreenProps) {
       } else {
         onError({
           type: 'FILE_FORMAT',
-          title: '파일이 너무 커요',
-          message: `${FILE_VALIDATION.MAX_SIZE / 1024 / 1024}MB 이하의 파일만 분석할 수 있어요.`,
-          suggestion: '더 짧은 기간의 대화를 내보내거나, 파일을 분할해주세요.',
+          title: t.validationErrors.fileTooLarge.title,
+          message: t.validationErrors.fileTooLarge.message.replace('{maxSize}', (FILE_VALIDATION.MAX_SIZE / 1024 / 1024).toString()),
+          suggestion: t.validationErrors.fileTooLarge.suggestion,
           canRetry: false,
         })
       }
@@ -207,9 +209,9 @@ export default function HomeScreen({ onFileUpload, onError }: HomeScreenProps) {
       setIsProcessing(false)
       onError({
         type: 'FILE_FORMAT',
-        title: '파일을 읽을 수 없어요',
-        message: '파일이 손상되었거나 읽을 수 없는 형식이에요.',
-        suggestion: '다른 파일을 선택해주세요.',
+        title: t.validationErrors.fileReadError.title,
+        message: t.validationErrors.fileReadError.message,
+        suggestion: t.validationErrors.fileReadError.suggestion,
         canRetry: false,
       })
     }
@@ -243,39 +245,31 @@ export default function HomeScreen({ onFileUpload, onError }: HomeScreenProps) {
       <header className="text-center md:text-left space-y-8">
         <div className="inline-block">
           <span className="inline-block bg-[#FF6B6B] text-white px-4 py-1.5 rounded-full border-2 border-black text-sm md:text-base font-bold shadow-[4px_4px_0px_0px_black] transform -rotate-2 mb-4">
-            대화 패턴을 10초 만에 분석
+            {t.home.badge}
           </span>
-          <h1 className="text-4xl md:text-5xl lg:text-7xl leading-tight font-black text-black">
-            카카오톡 대화 분석으로<br />
-            그 사람의<br />
-            <span className="text-[#4D96FF] relative inline-block">
-              진심
-              <svg className="absolute w-full h-3 -bottom-1 left-0 text-[#FFD233] -z-10" viewBox="0 0 100 10" preserveAspectRatio="none" aria-hidden="true">
-                <path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="8" fill="none" />
-              </svg>
-            </span>을 알아보세요
+          <h1 className="text-4xl md:text-5xl lg:text-7xl leading-tight font-black text-black whitespace-pre-line">
+            {t.home.title}
           </h1>
         </div>
 
-        <p className="text-xl text-gray-600 font-medium leading-relaxed max-w-lg mx-auto md:mx-0">
-          카톡 대화 내용만 넣으면 <br className="md:hidden" />AI가 답장 속도, 감정선, 주도권까지 <br />
-          완벽하게 분석해 드립니다.
+        <p className="text-xl text-gray-600 font-medium leading-relaxed max-w-lg mx-auto md:mx-0 whitespace-pre-line">
+          {t.home.subtitle}
         </p>
 
         <p className="inline-block mt-2 font-bold text-black border-b-2 border-[#FFD233]">
-          #서버저장NO #100%익명
+          {t.home.privacy}
         </p>
 
         {/* Desktop Features */}
         <ul className="hidden md:flex flex-wrap gap-3" aria-label="분석 기능 목록">
           <li className="neo-badge px-3 py-1 bg-white rounded-full text-sm font-bold flex items-center gap-2">
-            <span className="w-2 h-2 bg-green-500 rounded-full border border-black" aria-hidden="true"></span> 답장 평균 시간
+            <span className="w-2 h-2 bg-green-500 rounded-full border border-black" aria-hidden="true"></span> {t.home.badges.replyTime}
           </li>
           <li className="neo-badge px-3 py-1 bg-white rounded-full text-sm font-bold flex items-center gap-2">
-            <span className="w-2 h-2 bg-blue-500 rounded-full border border-black" aria-hidden="true"></span> 대화 성향 분석
+            <span className="w-2 h-2 bg-blue-500 rounded-full border border-black" aria-hidden="true"></span> {t.home.badges.personality}
           </li>
           <li className="neo-badge px-3 py-1 bg-white rounded-full text-sm font-bold flex items-center gap-2">
-            <span className="w-2 h-2 bg-red-500 rounded-full border border-black" aria-hidden="true"></span> 대화 주도권 분석
+            <span className="w-2 h-2 bg-red-500 rounded-full border border-black" aria-hidden="true"></span> {t.home.badges.dominance}
           </li>
         </ul>
       </header>
@@ -289,8 +283,8 @@ export default function HomeScreen({ onFileUpload, onError }: HomeScreenProps) {
           <div className="relative z-10">
             <div className="flex justify-between items-center mb-6">
               <div>
-                <h2 id="upload-heading" className="text-2xl font-bold font-display">대화 파일 업로드</h2>
-                <p className="text-xs text-gray-500 mt-1">.txt 파일만 지원합니다</p>
+                <h2 id="upload-heading" className="text-2xl font-bold font-display">{t.home.uploadSection.title}</h2>
+                <p className="text-xs text-gray-500 mt-1">{t.home.uploadSection.subtitle}</p>
               </div>
               <div className="bg-gray-100 p-2 rounded-xl border-2 border-black/5" aria-hidden="true">
                 <UploadCloud className="w-6 h-6 text-black" />
@@ -322,8 +316,8 @@ export default function HomeScreen({ onFileUpload, onError }: HomeScreenProps) {
             >
               {isProcessing ? (
                 <>
-                  <div className="w-8 h-8 border-4 border-[#4D96FF] border-t-transparent rounded-full animate-spin mb-2" role="status" aria-label="파일 처리 중" />
-                  <p className="font-bold text-gray-500">처리 중...</p>
+                  <div className="w-8 h-8 border-4 border-[#4D96FF] border-t-transparent rounded-full animate-spin mb-2" role="status" aria-label={t.home.uploadSection.processing} />
+                  <p className="font-bold text-gray-500">{t.home.uploadSection.processing}</p>
                 </>
               ) : (
                 <>
@@ -331,7 +325,7 @@ export default function HomeScreen({ onFileUpload, onError }: HomeScreenProps) {
                     <FileText className="w-6 h-6 text-black" />
                   </div>
                   <p className="font-bold text-gray-500 group-hover:text-[#4D96FF] z-10">
-                    파일을 드래그하거나 클릭
+                    {t.home.uploadSection.dragOrClick}
                   </p>
                 </>
               )}
@@ -350,10 +344,10 @@ export default function HomeScreen({ onFileUpload, onError }: HomeScreenProps) {
               <button
                 onClick={() => !isProcessing && document.getElementById('file-input')?.click()}
                 disabled={isProcessing}
-                aria-label="대화 파일 분석 시작하기"
+                aria-label={t.home.uploadSection.analyzeButton}
                 className="neo-btn w-full bg-black text-white py-4 rounded-xl text-lg flex justify-center items-center gap-2 hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-transform font-bold"
               >
-                <Sparkles className="w-5 h-5 text-[#FFD233]" aria-hidden="true" /> 지금 바로 분석하기
+                <Sparkles className="w-5 h-5 text-[#FFD233]" aria-hidden="true" /> {t.home.uploadSection.analyzeButton}
               </button>
             </div>
           </div>
@@ -363,14 +357,14 @@ export default function HomeScreen({ onFileUpload, onError }: HomeScreenProps) {
 
       {/* How to Export Guide */}
       <section className="border-t-2 border-black pt-12" aria-labelledby="export-guide-heading">
-        <h2 id="export-guide-heading" className="font-display text-3xl text-black mb-8 text-center">카카오톡 대화 내보내기 방법</h2>
+        <h2 id="export-guide-heading" className="font-display text-3xl text-black mb-8 text-center">{t.home.exportGuide.title}</h2>
 
         <div className="grid md:grid-cols-2 gap-6">
           {/* Mobile Guide */}
           <div className="neo-card bg-gradient-to-br from-yellow-50 to-orange-50 p-6 sm:p-8 rounded-2xl border-4 border-black">
             <div className="flex items-center gap-3 mb-6">
               <div className="text-4xl">📱</div>
-              <h4 className="font-display text-2xl font-bold text-gray-800">모바일</h4>
+              <h4 className="font-display text-2xl font-bold text-gray-800">{t.home.exportGuide.mobile.title}</h4>
             </div>
             <div className="space-y-4">
               <div className="flex gap-4">
@@ -378,8 +372,8 @@ export default function HomeScreen({ onFileUpload, onError }: HomeScreenProps) {
                   1
                 </div>
                 <div>
-                  <h4 className="font-bold text-gray-800 mb-1">카카오톡 앱에서 대화방 열기</h4>
-                  <p className="text-sm text-gray-600">분석하고 싶은 1:1 대화방을 엽니다.</p>
+                  <h4 className="font-bold text-gray-800 mb-1">{t.home.exportGuide.mobile.step1.title}</h4>
+                  <p className="text-sm text-gray-600">{t.home.exportGuide.mobile.step1.desc}</p>
                 </div>
               </div>
 
@@ -388,8 +382,8 @@ export default function HomeScreen({ onFileUpload, onError }: HomeScreenProps) {
                   2
                 </div>
                 <div>
-                  <h4 className="font-bold text-gray-800 mb-1">햄버거 메뉴 클릭</h4>
-                  <p className="text-sm text-gray-600">우측 상단의 <span className="font-bold">≡</span> (햄버거 메뉴) 버튼을 누릅니다.</p>
+                  <h4 className="font-bold text-gray-800 mb-1">{t.home.exportGuide.mobile.step2.title}</h4>
+                  <p className="text-sm text-gray-600">{t.home.exportGuide.mobile.step2.desc}</p>
                 </div>
               </div>
 
@@ -398,8 +392,8 @@ export default function HomeScreen({ onFileUpload, onError }: HomeScreenProps) {
                   3
                 </div>
                 <div>
-                  <h4 className="font-bold text-gray-800 mb-1">톱니바퀴(설정) 클릭</h4>
-                  <p className="text-sm text-gray-600">메뉴에서 <span className="font-bold">⚙️ 톱니바퀴</span> 아이콘을 누릅니다.</p>
+                  <h4 className="font-bold text-gray-800 mb-1">{t.home.exportGuide.mobile.step3.title}</h4>
+                  <p className="text-sm text-gray-600">{t.home.exportGuide.mobile.step3.desc}</p>
                 </div>
               </div>
 
@@ -408,8 +402,8 @@ export default function HomeScreen({ onFileUpload, onError }: HomeScreenProps) {
                   4
                 </div>
                 <div>
-                  <h4 className="font-bold text-gray-800 mb-1">대화 내용 내보내기</h4>
-                  <p className="text-sm text-gray-600"><span className="font-bold">"대화 내용 내보내기"</span>를 선택합니다.</p>
+                  <h4 className="font-bold text-gray-800 mb-1">{t.home.exportGuide.mobile.step4.title}</h4>
+                  <p className="text-sm text-gray-600">{t.home.exportGuide.mobile.step4.desc}</p>
                 </div>
               </div>
 
@@ -418,11 +412,8 @@ export default function HomeScreen({ onFileUpload, onError }: HomeScreenProps) {
                   5
                 </div>
                 <div>
-                  <h4 className="font-bold text-gray-800 mb-1">내보내기 방식 선택</h4>
-                  <p className="text-sm text-gray-600">
-                    <span className="font-bold">"텍스트 메시지만 보내기"</span> 또는
-                    <span className="font-bold"> "모든 메시지 도큐멘트로 저장하기"</span> 중 선택합니다.
-                  </p>
+                  <h4 className="font-bold text-gray-800 mb-1">{t.home.exportGuide.mobile.step5.title}</h4>
+                  <p className="text-sm text-gray-600">{t.home.exportGuide.mobile.step5.desc}</p>
                 </div>
               </div>
 
@@ -431,8 +422,8 @@ export default function HomeScreen({ onFileUpload, onError }: HomeScreenProps) {
                   6
                 </div>
                 <div>
-                  <h4 className="font-bold text-gray-800 mb-1">파일 저장 후 업로드</h4>
-                  <p className="text-sm text-gray-600">저장된 .txt 파일을 위 업로드 창에 올려주세요!</p>
+                  <h4 className="font-bold text-gray-800 mb-1">{t.home.exportGuide.mobile.step6.title}</h4>
+                  <p className="text-sm text-gray-600">{t.home.exportGuide.mobile.step6.desc}</p>
                 </div>
               </div>
             </div>
@@ -442,17 +433,17 @@ export default function HomeScreen({ onFileUpload, onError }: HomeScreenProps) {
           <div className="neo-card bg-gradient-to-br from-blue-50 to-cyan-50 p-6 sm:p-8 rounded-2xl border-4 border-black">
             <div className="flex items-center gap-3 mb-6">
               <div className="text-4xl">💻</div>
-              <h4 className="font-display text-2xl font-bold text-gray-800">PC</h4>
+              <h4 className="font-display text-2xl font-bold text-gray-800">{t.home.exportGuide.pc.title}</h4>
             </div>
 
             {/* 단축키 팁 */}
             <div className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white p-4 rounded-xl mb-6 border-2 border-black">
               <div className="flex items-center gap-2 mb-2">
                 <span className="text-xl">⚡</span>
-                <span className="font-bold text-sm">빠른 방법 (추천)</span>
+                <span className="font-bold text-sm">{t.home.exportGuide.pc.shortcut.label}</span>
               </div>
               <p className="text-sm leading-relaxed">
-                대화창에서 <kbd className="px-2 py-1 bg-white text-blue-600 rounded font-bold text-xs border border-blue-300">Ctrl</kbd> + <kbd className="px-2 py-1 bg-white text-blue-600 rounded font-bold text-xs border border-blue-300">S</kbd> 키를 누르면 바로 대화 내보내기 창이 열립니다!
+                {t.home.exportGuide.pc.shortcut.desc}
               </p>
             </div>
 
@@ -462,8 +453,8 @@ export default function HomeScreen({ onFileUpload, onError }: HomeScreenProps) {
                   1
                 </div>
                 <div>
-                  <h4 className="font-bold text-gray-800 mb-1">PC 카카오톡 실행</h4>
-                  <p className="text-sm text-gray-600">PC용 카카오톡을 실행하고 분석할 대화방을 엽니다.</p>
+                  <h4 className="font-bold text-gray-800 mb-1">{t.home.exportGuide.pc.step1.title}</h4>
+                  <p className="text-sm text-gray-600">{t.home.exportGuide.pc.step1.desc}</p>
                 </div>
               </div>
 
@@ -472,12 +463,8 @@ export default function HomeScreen({ onFileUpload, onError }: HomeScreenProps) {
                   2
                 </div>
                 <div>
-                  <h4 className="font-bold text-gray-800 mb-1">대화 내보내기</h4>
-                  <p className="text-sm text-gray-600">
-                    <span className="font-bold">Ctrl + S</span>를 누르거나,
-                    우측 상단 <span className="font-bold">≡</span> 메뉴에서
-                    <span className="font-bold"> "대화 내용 내보내기"</span>를 클릭합니다.
-                  </p>
+                  <h4 className="font-bold text-gray-800 mb-1">{t.home.exportGuide.pc.step2.title}</h4>
+                  <p className="text-sm text-gray-600">{t.home.exportGuide.pc.step2.desc}</p>
                 </div>
               </div>
 
@@ -486,8 +473,8 @@ export default function HomeScreen({ onFileUpload, onError }: HomeScreenProps) {
                   3
                 </div>
                 <div>
-                  <h4 className="font-bold text-gray-800 mb-1">저장 위치 선택</h4>
-                  <p className="text-sm text-gray-600">저장할 폴더를 선택하고 <span className="font-bold">확인</span>을 누릅니다. 자동으로 .txt 파일이 생성됩니다.</p>
+                  <h4 className="font-bold text-gray-800 mb-1">{t.home.exportGuide.pc.step3.title}</h4>
+                  <p className="text-sm text-gray-600">{t.home.exportGuide.pc.step3.desc}</p>
                 </div>
               </div>
 
@@ -496,8 +483,8 @@ export default function HomeScreen({ onFileUpload, onError }: HomeScreenProps) {
                   4
                 </div>
                 <div>
-                  <h4 className="font-bold text-gray-800 mb-1">파일 업로드</h4>
-                  <p className="text-sm text-gray-600">생성된 .txt 파일을 위 업로드 창에 드래그하거나 클릭해서 선택하세요!</p>
+                  <h4 className="font-bold text-gray-800 mb-1">{t.home.exportGuide.pc.step4.title}</h4>
+                  <p className="text-sm text-gray-600">{t.home.exportGuide.pc.step4.desc}</p>
                 </div>
               </div>
             </div>
@@ -507,41 +494,41 @@ export default function HomeScreen({ onFileUpload, onError }: HomeScreenProps) {
 
       {/* FAQ Section */}
       <section className="border-t-2 border-black pt-12 mt-12" aria-labelledby="faq-heading">
-        <h2 id="faq-heading" className="font-display text-3xl text-black mb-8 text-center">자주 묻는 질문</h2>
+        <h2 id="faq-heading" className="font-display text-3xl text-black mb-8 text-center">{t.home.faqSection.title}</h2>
 
         <div className="grid md:grid-cols-2 gap-4">
           <div className="neo-card bg-white p-6 rounded-xl">
-            <h4 className="font-bold text-lg text-gray-800 mb-2">Q. 카톡 대화 분석은 정말 무료인가요?</h4>
+            <h4 className="font-bold text-lg text-gray-800 mb-2">{t.home.faqSection.q1.q}</h4>
             <p className="text-sm text-gray-600 leading-relaxed">
-              네, 속마음 스캐너는 기본적으로 무료로 제공됩니다. 카카오톡 대화 내용을 업로드하여 호감도와 심리를 무료로 분석해 보세요.
+              {t.home.faqSection.q1.a}
             </p>
           </div>
 
           <div className="neo-card bg-white p-6 rounded-xl">
-            <h4 className="font-bold text-lg text-gray-800 mb-2">Q. 개인정보는 안전한가요?</h4>
+            <h4 className="font-bold text-lg text-gray-800 mb-2">{t.home.faqSection.q2.q}</h4>
             <p className="text-sm text-gray-600 leading-relaxed">
-              네, 절대적으로 안전합니다. 모든 대화 내용은 서버에 저장되지 않으며, 분석 후 즉시 삭제됩니다. Stateless 아키텍처로 완벽한 익명성을 보장합니다.
+              {t.home.faqSection.q2.a}
             </p>
           </div>
 
           <div className="neo-card bg-white p-6 rounded-xl">
-            <h4 className="font-bold text-lg text-gray-800 mb-2">Q. 대화 패턴에서 무엇을 알 수 있나요?</h4>
+            <h4 className="font-bold text-lg text-gray-800 mb-2">{t.home.faqSection.q3.q}</h4>
             <p className="text-sm text-gray-600 leading-relaxed">
-              AI가 답장 속도, 이모티콘 사용량, 대화 주도권, 질문 빈도 등을 종합적으로 분석하여 두 사람의 소통 방식과 관계 역학을 파악해드립니다.
+              {t.home.faqSection.q3.a}
             </p>
           </div>
 
           <div className="neo-card bg-white p-6 rounded-xl">
-            <h4 className="font-bold text-lg text-gray-800 mb-2">Q. 어떤 파일 형식을 지원하나요?</h4>
+            <h4 className="font-bold text-lg text-gray-800 mb-2">{t.home.faqSection.q4.q}</h4>
             <p className="text-sm text-gray-600 leading-relaxed">
-              카카오톡에서 내보낸 .txt 파일을 지원합니다. PC 카카오톡과 모바일 카카오톡 모두에서 내보낸 파일을 분석할 수 있습니다.
+              {t.home.faqSection.q4.a}
             </p>
           </div>
 
           <div className="neo-card bg-white p-6 rounded-xl md:col-span-2">
-            <h4 className="font-bold text-lg text-gray-800 mb-2">Q. 분석 결과는 얼마나 정확한가요?</h4>
+            <h4 className="font-bold text-lg text-gray-800 mb-2">{t.home.faqSection.q5.q}</h4>
             <p className="text-sm text-gray-600 leading-relaxed">
-              최신 AI 기술을 활용하여 대화 패턴을 분석합니다. 대화량이 많을수록 더 정확한 분석 결과를 제공합니다. 다만, 결과는 참고용이며 실제 관계는 다양한 요소에 영향을 받습니다.
+              {t.home.faqSection.q5.a}
             </p>
           </div>
         </div>
@@ -556,10 +543,10 @@ export default function HomeScreen({ onFileUpload, onError }: HomeScreenProps) {
       <footer className="mt-12 text-center pb-8 border-t-2 border-black pt-8">
         <div className="space-y-2">
           <p className="text-gray-400 text-sm font-mono">
-            Mind Scanner © 2025. All Data Processed Locally.
+            {t.home.footer.copyright}
           </p>
           <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
-            <span>Made by</span>
+            <span>{t.home.footer.madeBy}</span>
             <a
               href="http://oceancode.site/"
               target="_blank"
@@ -593,14 +580,14 @@ export default function HomeScreen({ onFileUpload, onError }: HomeScreenProps) {
               href="/privacy"
               className="hover:text-gray-600 transition-colors underline"
             >
-              개인정보처리방침
+              {t.home.footer.privacy}
             </a>
             <span>•</span>
             <a
               href="/terms"
               className="hover:text-gray-600 transition-colors underline"
             >
-              이용약관
+              {t.home.footer.terms}
             </a>
           </div>
         </div>

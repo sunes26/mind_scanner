@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import OpenAI from 'openai'
 import { isValidAnalysisResult, validateEnvironmentVariables, API_TIMEOUTS } from '@/utils/validation'
 import { sanitizeNumber } from '@/utils/sanitize'
+import { SupportedLanguage } from '@/utils/language'
 
 // 보안: 환경 변수 검증
 const envCheck = validateEnvironmentVariables()
@@ -15,8 +16,10 @@ const openai = new OpenAI({
   timeout: API_TIMEOUTS.ANALYSIS,
 })
 
-// 시스템 프롬프트 - 연애 심리 전문가 페르소나
-const SYSTEM_PROMPT = `너는 "연애 심리 분석가 닥터 하트"야.
+// 시스템 프롬프트 - 연애 심리 전문가 페르소나 (언어별)
+function getSystemPrompt(lang: SupportedLanguage): string {
+  if (lang === 'ko') {
+    return `너는 "연애 심리 분석가 닥터 하트"야.
 10년간 수천 건의 연애 상담을 해온 전문가로, 카카오톡 대화 패턴만 보고도 두 사람의 관계를 정확히 파악할 수 있어.
 
 ## 분석 원칙
@@ -41,48 +44,45 @@ const SYSTEM_PROMPT = `너는 "연애 심리 분석가 닥터 하트"야.
 - 질문을 더 많이 하는 쪽
 - 이모티콘/ㅋㅋ 사용량 (많이 쓰는 쪽이 더 관심 있음)
 
-## 답장 속도 기준 (호감도에 영향)
-- 5분 이내: 매우 높은 관심 (+10~15점)
-- 30분 이내: 높은 관심 (+5~10점)
-- 2시간 이내: 보통 관심 (±0점)
-- 반나절 이내: 낮은 관심 (-5점)
-- 하루 이상: 매우 낮은 관심 (-10점)
-
-## 웃음 반응 기준 (긍정적 분위기)
-- ㅋㅋ, ㅎㅎ, ㅋㅋㅋ 등 웃음 표현이 많을수록 편안하고 즐거운 대화
-- 메시지당 평균 0.3개 이상: 매우 긍정적 (+5~7점)
-- 메시지당 평균 0.15~0.3개: 긍정적 (+3~5점)
-- 메시지당 평균 0.05~0.15개: 보통 (±0점)
-- 메시지당 평균 0.05개 미만: 건조함 (-3점)
-
-## 하트/사랑 이모지 기준 (직접적 호감 표현)
-- 💕❤️😍🥰💖 등 애정 이모지는 가장 명확한 호감 지표
-- 전체 대화 중 10개 이상: 매우 높은 호감 (+15점)
-- 5~9개: 높은 호감 (+10점)
-- 2~4개: 관심 있음 (+5점)
-- 1개: 살짝 관심 (+2점)
-- 0개: 영향 없음 (±0점)
-
-## 애정 표현 단어 기준 (언어적 호감)
-- "사랑", "좋아", "보고싶다", "귀엽다", "예쁘다" 등
-- 20회 이상: 매우 직접적 (+12점)
-- 10~19회: 직접적 (+8점)
-- 5~9회: 호감 있음 (+5점)
-- 1~4회: 약간 있음 (+2점)
-- 0회: 영향 없음 (±0점)
-
-## 연속 메시지 기준 (편안함/적극성)
-- 1분 내 3개 이상 연달아 보냄 = 생각나는 대로 편하게
-- 10회 이상: 매우 편한 사이 (+7점)
-- 5~9회: 편안함 (+5점)
-- 2~4회: 보통 (+3점)
-- 0~1회: 신중함 (±0점)
-
 ## 응답 규칙
 - 반드시 지정된 JSON 형식으로만 응답
 - 이모지를 적극 활용
 - 한국어로 응답
 - 분석 내용은 2-3문장으로 간결하게`
+  }
+
+  // English version
+  return `You are "Dr. Heart", a relationship psychology analyst.
+With 10 years of experience analyzing thousands of conversations, you can accurately assess relationships just by examining chat patterns.
+
+## Analysis Principles
+1. Data-driven: Base your analysis on the provided statistics
+2. Engaging: Use relatable language and insights
+3. Specific: Provide actionable tips, not vague advice
+4. Positive: Include hopeful messages regardless of the results
+
+## Affection Score Criteria (0-100)
+- 90-100: 💍 Perfect chemistry, marriage material
+- 80-89: 💕 Almost dating, just need to confess
+- 70-79: 💗 Dating phase, good flow
+- 60-69: 💛 Some interest, needs more effort
+- 50-59: 🤔 Ambiguous, needs direction
+- 40-49: 😅 One-sided interest possible
+- 0-39: 💔 Just friends
+
+## Dominance Criteria
+- Who initiates conversations more
+- Reply speed difference (faster = more interested)
+- Message length difference
+- Who asks more questions
+- Emoji/laughter usage (more = more interested)
+
+## Response Rules
+- Respond ONLY in the specified JSON format
+- Use emojis actively
+- Respond in English
+- Keep analysis concise (2-3 sentences)`
+}
 
 // 분석 요청 프롬프트 생성
 function createAnalysisPrompt(data: {
@@ -90,8 +90,9 @@ function createAnalysisPrompt(data: {
   p1: string
   p2: string
   analysis?: any
+  lang?: SupportedLanguage
 }): string {
-  const { rawText, p1, p2, analysis } = data
+  const { rawText, p1, p2, analysis, lang = 'ko' } = data
 
   // 대화 샘플 추출 (최근 대화 위주)
   const recentChat = rawText.slice(-5000)
@@ -103,10 +104,17 @@ function createAnalysisPrompt(data: {
 
     // 답장 시간을 읽기 쉬운 형식으로 변환
     const formatReplyTime = (minutes: number) => {
-      if (minutes === 0) return '즉시'
-      if (minutes < 60) return `${minutes}분`
-      if (minutes < 1440) return `${Math.round(minutes / 60)}시간`
-      return `${Math.round(minutes / 1440)}일`
+      if (lang === 'ko') {
+        if (minutes === 0) return '즉시'
+        if (minutes < 60) return `${minutes}분`
+        if (minutes < 1440) return `${Math.round(minutes / 60)}시간`
+        return `${Math.round(minutes / 1440)}일`
+      } else {
+        if (minutes === 0) return 'instant'
+        if (minutes < 60) return `${minutes}min`
+        if (minutes < 1440) return `${Math.round(minutes / 60)}hr`
+        return `${Math.round(minutes / 1440)}day`
+      }
     }
 
     const p1Reply = formatReplyTime(p1Stats?.avgReplyTime || 0)
@@ -115,7 +123,8 @@ function createAnalysisPrompt(data: {
     const p1LaughRatio = ((p1Stats?.laughCount || 0) / (p1Stats?.messageCount || 1)).toFixed(2)
     const p2LaughRatio = ((p2Stats?.laughCount || 0) / (p2Stats?.messageCount || 1)).toFixed(2)
 
-    analysisText = `
+    if (lang === 'ko') {
+      analysisText = `
 참여자 통계:
 - ${p1}: 메시지 ${p1Stats?.messageCount || 0}개, 평균 길이 ${p1Stats?.avgMessageLength?.toFixed(1) || 0}자, 이모지 ${p1Stats?.emojiCount || 0}개, 웃음 ${p1Stats?.laughCount || 0}개 (메시지당 ${p1LaughRatio}), 평균 답장 ${p1Reply}
   → 하트 이모지 ${p1Stats?.heartEmojiCount || 0}개, 애정 표현 ${p1Stats?.affectionWordCount || 0}회, 연속 메시지 ${p1Stats?.consecutiveMessageCount || 0}회
@@ -123,9 +132,20 @@ function createAnalysisPrompt(data: {
   → 하트 이모지 ${p2Stats?.heartEmojiCount || 0}개, 애정 표현 ${p2Stats?.affectionWordCount || 0}회, 연속 메시지 ${p2Stats?.consecutiveMessageCount || 0}회
 총 대화: ${analysis.totalMessages || 0}개 (${analysis.totalDays || 0}일간)
 `
+    } else {
+      analysisText = `
+Participant Statistics:
+- ${p1}: ${p1Stats?.messageCount || 0} messages, avg length ${p1Stats?.avgMessageLength?.toFixed(1) || 0} chars, ${p1Stats?.emojiCount || 0} emojis, ${p1Stats?.laughCount || 0} laughs (${p1LaughRatio} per msg), avg reply ${p1Reply}
+  → ${p1Stats?.heartEmojiCount || 0} heart emojis, ${p1Stats?.affectionWordCount || 0} affection words, ${p1Stats?.consecutiveMessageCount || 0} consecutive msgs
+- ${p2}: ${p2Stats?.messageCount || 0} messages, avg length ${p2Stats?.avgMessageLength?.toFixed(1) || 0} chars, ${p2Stats?.emojiCount || 0} emojis, ${p2Stats?.laughCount || 0} laughs (${p2LaughRatio} per msg), avg reply ${p2Reply}
+  → ${p2Stats?.heartEmojiCount || 0} heart emojis, ${p2Stats?.affectionWordCount || 0} affection words, ${p2Stats?.consecutiveMessageCount || 0} consecutive msgs
+Total conversation: ${analysis.totalMessages || 0} messages (${analysis.totalDays || 0} days)
+`
+    }
   }
 
-  return `## 분석 대상
+  if (lang === 'ko') {
+    return `## 분석 대상
 - 참여자 1: "${p1}"
 - 참여자 2: "${p2}"
 
@@ -173,12 +193,64 @@ ${recentChat}
 }
 
 중요: 유효한 JSON만 응답. 줄바꿈 금지. 따옴표는 작은따옴표로 대체.`
+  }
+
+  // English version
+  return `## Analysis Target
+- Participant 1: "${p1}"
+- Participant 2: "${p2}"
+
+## Detailed Analysis Data
+${analysisText || '(No detailed data)'}
+
+## Conversation Sample (Recent messages)
+\`\`\`
+${recentChat}
+\`\`\`
+
+## Request
+Analyze the relationship between these two people based on the data above.
+
+Respond ONLY in the following JSON format:
+{
+  "score": (integer between 0-100, affection score),
+  "dominance": "${p1} or ${p2}",
+  "attackTip": {
+    "${p1}": "(Specific relationship advice for ${p1} in 2-3 sentences)",
+    "${p2}": "(Specific relationship advice for ${p2} in 2-3 sentences)"
+  },
+  "personalities": {
+    "${p1}": {
+      "type": "(Personality type based on chat patterns, e.g., Proactive Leader, Empathetic Listener)",
+      "traits": ["trait1", "trait2", "trait3"],
+      "description": "(3 sentences describing chat patterns, emotional expression, relationship style)"
+    },
+    "${p2}": {
+      "type": "(Personality type based on chat patterns)",
+      "traits": ["trait1", "trait2", "trait3"],
+      "description": "(3 sentences describing chat patterns, emotional expression, relationship style)"
+    }
+  },
+  "mutualPerception": {
+    "${p1}": {
+      "thinkingAboutYou": "(How ${p2} perceives ${p1} in 3 sentences)",
+      "youThinkingAbout": "(How ${p1} perceives ${p2} in 3 sentences)"
+    },
+    "${p2}": {
+      "thinkingAboutYou": "(How ${p1} perceives ${p2} in 3 sentences)",
+      "youThinkingAbout": "(How ${p2} perceives ${p1} in 3 sentences)"
+    }
+  }
+}
+
+Important: Respond with valid JSON only. No line breaks. Use single quotes instead of double quotes in text.`
 }
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { rawText, p1, p2, analysis } = body
+    const { rawText, p1, p2, analysis, language = 'ko' } = body
+    const lang: SupportedLanguage = language
 
     // 보안: 입력 데이터 검증
     if (!rawText || typeof rawText !== 'string') {
@@ -213,7 +285,7 @@ export async function POST(request: NextRequest) {
     if (!process.env.OPENAI_API_KEY) {
       console.log('OpenAI API key not configured, returning mock data')
       // API 키가 없으면 목업 데이터 반환
-      return NextResponse.json(generateMockResult(p1, p2, analysis))
+      return NextResponse.json(generateMockResult(p1, p2, analysis, lang))
     }
 
     const prompt = createAnalysisPrompt({
@@ -221,6 +293,7 @@ export async function POST(request: NextRequest) {
       p1,
       p2,
       analysis,
+      lang,
     })
 
     const completion = await openai.chat.completions.create({
@@ -228,7 +301,7 @@ export async function POST(request: NextRequest) {
       messages: [
         {
           role: 'system',
-          content: SYSTEM_PROMPT,
+          content: getSystemPrompt(lang),
         },
         {
           role: 'user',
@@ -253,13 +326,13 @@ export async function POST(request: NextRequest) {
       console.error('JSON parse error:', parseError)
       console.error('Content:', content)
       // JSON 파싱 실패 시 Mock 데이터로 fallback
-      return NextResponse.json(generateMockResult(p1, p2, analysis))
+      return NextResponse.json(generateMockResult(p1, p2, analysis, lang))
     }
 
     // 보안: 응답 구조 검증
     if (!isValidAnalysisResult(result)) {
       console.error('Invalid analysis result structure, falling back to mock data')
-      return NextResponse.json(generateMockResult(p1, p2, analysis))
+      return NextResponse.json(generateMockResult(p1, p2, analysis, lang))
     }
 
     // 보안: 점수 범위 검증
@@ -267,7 +340,7 @@ export async function POST(request: NextRequest) {
 
     const validatedResult = {
       score,
-      relation: getRelationByScore(score), // AI 생성 대신 점수 기반 랜덤 선택
+      relation: getRelationByScore(score, lang), // AI 생성 대신 점수 기반 랜덤 선택
       dominance: result.dominance || p1,
       attackTip: result.attackTip || '',
       personalities: result.personalities || {},
@@ -285,86 +358,143 @@ export async function POST(request: NextRequest) {
       generateMockResult(
         body.p1 || '사람1',
         body.p2 || '사람2',
-        body.analysis
+        body.analysis,
+        body.language || 'ko'
       )
     )
   }
 }
 
 // 점수 구간별 관계 텍스트 생성 함수
-function getRelationByScore(score: number): string {
+function getRelationByScore(score: number, lang: SupportedLanguage = 'ko'): string {
+  if (lang === 'ko') {
+    const relations90to100 = [
+      '서로에게 매우 중요한 존재',
+      '최고 수준의 상호 교감',
+      '깊은 신뢰가 형성된 관계',
+      '완벽한 대화 케미스트리',
+    ]
+
+    const relations80to89 = [
+      '서로에게 높은 관심을 보이는 사이',
+      '편안하고 긍정적인 관계',
+      '활발한 소통이 이루어지는 사이',
+      '상호 호감이 확실한 관계',
+    ]
+
+    const relations70to79 = [
+      '안정적으로 소통하는 관계',
+      '서로에게 관심이 있는 사이',
+      '균형 잡힌 대화 패턴',
+      '점점 가까워지고 있는 중',
+    ]
+
+    const relations60to69 = [
+      '관계 발전 가능성이 있는 사이',
+      '서로를 파악해가는 단계',
+      '조금 더 노력이 필요한 관계',
+      '아직 탐색 중인 사이',
+    ]
+
+    const relations50to59 = [
+      '한쪽이 더 적극적인 관계',
+      '관심도에 온도차가 있는 사이',
+      '소통 균형이 필요한 관계',
+      '방향 설정이 필요한 단계',
+    ]
+
+    const relations40to49 = [
+      '소극적인 소통 패턴',
+      '한쪽의 일방적인 관심',
+      '대화가 자주 끊기는 사이',
+      '적극성이 부족한 관계',
+    ]
+
+    const relations0to39 = [
+      '평범한 지인 관계',
+      '소통이 제한적인 사이',
+      '친구 이상의 관심은 없는 듯',
+      '형식적인 대화가 많은 관계',
+    ]
+
+    let selectedArray: string[]
+
+    if (score >= 90) selectedArray = relations90to100
+    else if (score >= 80) selectedArray = relations80to89
+    else if (score >= 70) selectedArray = relations70to79
+    else if (score >= 60) selectedArray = relations60to69
+    else if (score >= 50) selectedArray = relations50to59
+    else if (score >= 40) selectedArray = relations40to49
+    else selectedArray = relations0to39
+
+    return selectedArray[Math.floor(Math.random() * selectedArray.length)]
+  }
+
+  // English version
   const relations90to100 = [
-    '서로에게 매우 중요한 존재',
-    '최고 수준의 상호 교감',
-    '깊은 신뢰가 형성된 관계',
-    '완벽한 대화 케미스트리',
+    'Very important to each other',
+    'Highest level of mutual connection',
+    'Deep trust has been established',
+    'Perfect conversation chemistry',
   ]
 
   const relations80to89 = [
-    '서로에게 높은 관심을 보이는 사이',
-    '편안하고 긍정적인 관계',
-    '활발한 소통이 이루어지는 사이',
-    '상호 호감이 확실한 관계',
+    'Showing high interest in each other',
+    'Comfortable and positive relationship',
+    'Active communication happening',
+    'Clear mutual affection',
   ]
 
   const relations70to79 = [
-    '안정적으로 소통하는 관계',
-    '서로에게 관심이 있는 사이',
-    '균형 잡힌 대화 패턴',
-    '점점 가까워지고 있는 중',
+    'Stable communication pattern',
+    'Interested in each other',
+    'Balanced conversation flow',
+    'Getting closer gradually',
   ]
 
   const relations60to69 = [
-    '관계 발전 가능성이 있는 사이',
-    '서로를 파악해가는 단계',
-    '조금 더 노력이 필요한 관계',
-    '아직 탐색 중인 사이',
+    'Potential for relationship growth',
+    'Getting to know each other phase',
+    'Needs a bit more effort',
+    'Still exploring each other',
   ]
 
   const relations50to59 = [
-    '한쪽이 더 적극적인 관계',
-    '관심도에 온도차가 있는 사이',
-    '소통 균형이 필요한 관계',
-    '방향 설정이 필요한 단계',
+    'One side more proactive',
+    'Temperature difference in interest',
+    'Communication balance needed',
+    'Direction setting required',
   ]
 
   const relations40to49 = [
-    '소극적인 소통 패턴',
-    '한쪽의 일방적인 관심',
-    '대화가 자주 끊기는 사이',
-    '적극성이 부족한 관계',
+    'Passive communication pattern',
+    'One-sided interest',
+    'Conversation often breaks off',
+    'Lacks proactivity',
   ]
 
   const relations0to39 = [
-    '평범한 지인 관계',
-    '소통이 제한적인 사이',
-    '친구 이상의 관심은 없는 듯',
-    '형식적인 대화가 많은 관계',
+    'Casual acquaintance relationship',
+    'Limited communication',
+    'No romantic interest apparent',
+    'Mostly formal conversations',
   ]
 
   let selectedArray: string[]
 
-  if (score >= 90) {
-    selectedArray = relations90to100
-  } else if (score >= 80) {
-    selectedArray = relations80to89
-  } else if (score >= 70) {
-    selectedArray = relations70to79
-  } else if (score >= 60) {
-    selectedArray = relations60to69
-  } else if (score >= 50) {
-    selectedArray = relations50to59
-  } else if (score >= 40) {
-    selectedArray = relations40to49
-  } else {
-    selectedArray = relations0to39
-  }
+  if (score >= 90) selectedArray = relations90to100
+  else if (score >= 80) selectedArray = relations80to89
+  else if (score >= 70) selectedArray = relations70to79
+  else if (score >= 60) selectedArray = relations60to69
+  else if (score >= 50) selectedArray = relations50to59
+  else if (score >= 40) selectedArray = relations40to49
+  else selectedArray = relations0to39
 
   return selectedArray[Math.floor(Math.random() * selectedArray.length)]
 }
 
 // 목업 결과 생성 함수
-function generateMockResult(p1: string, p2: string, analysis?: any) {
+function generateMockResult(p1: string, p2: string, analysis?: any, lang: SupportedLanguage = 'ko') {
   const countP1 = analysis?.participants?.[p1]?.messageCount || 100
   const countP2 = analysis?.participants?.[p2]?.messageCount || 100
   const total = countP1 + countP2
@@ -701,18 +831,28 @@ function generateMockResult(p1: string, p2: string, analysis?: any) {
 
   return {
     score,
-    relation: getRelationByScore(score),
-    summary: `${p1}님과 ${p2}님의 대화 패턴을 분석한 결과, 서로에게 호감이 있는 것으로 보입니다. 대화 빈도와 반응 속도가 좋은 편이에요.`,
+    relation: getRelationByScore(score, lang),
+    summary: lang === 'ko'
+      ? `${p1}님과 ${p2}님의 대화 패턴을 분석한 결과, 서로에게 호감이 있는 것으로 보입니다. 대화 빈도와 반응 속도가 좋은 편이에요.`
+      : `Analysis of ${p1} and ${p2}'s conversation patterns shows mutual interest. Communication frequency and response speed are good.`,
     dominance: dominant,
-    advice: `현재 좋은 흐름이에요! 하지만 너무 급하게 진도를 빼려 하지 마세요. ${lessActive}님이 대화를 더 많이 주도하고 있어요.`,
+    advice: lang === 'ko'
+      ? `현재 좋은 흐름이에요! 하지만 너무 급하게 진도를 빼려 하지 마세요. ${lessActive}님이 대화를 더 많이 주도하고 있어요.`
+      : `Things are going well! But don't rush the relationship. ${lessActive} is leading the conversations more.`,
     attackTip: attackTips,
-    greenFlags: [
+    greenFlags: lang === 'ko' ? [
       '답장 속도가 빠른 편',
       '대화가 끊기지 않고 이어짐',
       '서로 질문을 주고받음',
+    ] : [
+      'Fast response speed',
+      'Continuous conversation flow',
+      'Mutual question exchange',
     ],
-    redFlags: [
+    redFlags: lang === 'ko' ? [
       '가끔 읽씹이 있음',
+    ] : [
+      'Occasional read-without-reply',
     ],
     personalities,
     mutualPerception,

@@ -2,6 +2,7 @@
 
 import { AlertTriangle, FileWarning, WifiOff, RefreshCw, Home, HelpCircle } from 'lucide-react'
 import { AppError, ErrorType } from '@/types'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 interface ErrorModalProps {
   error: AppError | null
@@ -35,6 +36,8 @@ const ErrorColors: Record<ErrorType, string> = {
 }
 
 export default function ErrorModal({ error, onRetry, onGoHome, isRetrying }: ErrorModalProps) {
+  const { t } = useLanguage()
+
   if (!error) return null
 
   const icon = ErrorIcons[error.type]
@@ -85,12 +88,12 @@ export default function ErrorModal({ error, onRetry, onGoHome, isRetrying }: Err
               {isRetrying ? (
                 <>
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  다시 시도 중...
+                  {t.errors.retrying}
                 </>
               ) : (
                 <>
                   <RefreshCw className="w-5 h-5" />
-                  다시 시도하기
+                  {t.errors.retryButton}
                 </>
               )}
             </button>
@@ -99,20 +102,20 @@ export default function ErrorModal({ error, onRetry, onGoHome, isRetrying }: Err
           <button
             onClick={onGoHome}
             className={`w-full py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition ${
-              error.canRetry 
+              error.canRetry
                 ? 'bg-white text-gray-600 border-2 border-gray-300 hover:border-black hover:text-black'
                 : 'neo-button bg-pink-500 text-white hover:bg-pink-600'
             }`}
           >
             <Home className="w-5 h-5" />
-            처음으로 돌아가기
+            {t.errors.goHomeButton}
           </button>
         </div>
 
         {/* Help Text */}
         <div className="px-4 pb-4">
           <p className="text-center text-xs text-gray-400">
-            문제가 계속되면 페이지를 새로고침해주세요 🔄
+            {t.errors.helpText}
           </p>
         </div>
       </div>
