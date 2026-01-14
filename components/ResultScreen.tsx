@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { RotateCcw, Share2, MessageSquare, Zap, PieChart, Clock, Heart, Lock, Key } from 'lucide-react'
+import { RotateCcw, Share2, MessageSquare, Zap, PieChart, Clock, Heart, Key } from 'lucide-react'
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, LineElement, PointElement, LinearScale, CategoryScale, Filler } from 'chart.js'
 import { Doughnut, Line } from 'react-chartjs-2'
 import { motion } from 'framer-motion'
@@ -17,7 +17,6 @@ import {
   scrollReveal,
 } from '@/utils/animations'
 import { safePercentage, sanitizeNumber } from '@/utils/sanitize'
-import InterstitialAd from '@/components/ads/InterstitialAd'
 import ResultPageAd from '@/components/ads/ResultPageAd'
 import { useLanguage } from '@/contexts/LanguageContext'
 
@@ -33,9 +32,7 @@ interface ResultScreenProps {
 export default function ResultScreen({ result, chatData, onRetry, onShare }: ResultScreenProps) {
   const { t } = useLanguage()
   const [displayScore, setDisplayScore] = useState(0)
-  const [isUnlocked, setIsUnlocked] = useState(false)
   const [selectedPerson, setSelectedPerson] = useState<'p1' | 'p2'>('p1')
-  const [showInterstitialAd, setShowInterstitialAd] = useState(false)
 
   useEffect(() => {
     const duration = 1500
@@ -51,14 +48,6 @@ export default function ResultScreen({ result, chatData, onRetry, onShare }: Res
     }
     requestAnimationFrame(animate)
   }, [result.score])
-
-  const handleUnlock = () => {
-    setShowInterstitialAd(true)
-  }
-
-  const handleAdComplete = () => {
-    setIsUnlocked(true)
-  }
 
   // Calculate real statistics
   const p1Stats = chatData.analysis?.participants[chatData.p1]
@@ -436,6 +425,14 @@ export default function ResultScreen({ result, chatData, onRetry, onShare }: Res
           </div>
         </motion.div>
 
+        {/* 광고 1 - Interest Score 다음 */}
+        <motion.div
+          className="lg:col-span-4"
+          variants={staggerItem}
+        >
+          <ResultPageAd type="banner" />
+        </motion.div>
+
         {/* Row 3 - Reply Patterns (Full Width, 4 columns) */}
         <motion.div
           className="neo-card bg-white p-4 sm:p-6 rounded-2xl lg:col-span-4"
@@ -513,6 +510,14 @@ export default function ResultScreen({ result, chatData, onRetry, onShare }: Res
           </div>
         </motion.div>
 
+        {/* 광고 2 - Reply Patterns 다음 */}
+        <motion.div
+          className="lg:col-span-4"
+          variants={staggerItem}
+        >
+          <ResultPageAd type="native" />
+        </motion.div>
+
         {/* SECRET REPORT (Full Width, 4 columns) */}
         <motion.div
           className="neo-card bg-gradient-to-br from-gray-900 to-black p-0 rounded-[2rem] lg:col-span-4 text-white overflow-hidden flex flex-col"
@@ -525,7 +530,7 @@ export default function ResultScreen({ result, chatData, onRetry, onShare }: Res
           </div>
 
           <div className="p-8 relative flex-1 bg-gradient-to-br from-gray-800 via-gray-900 to-black">
-            <div className={`space-y-6 ${!isUnlocked ? 'blur-secret opacity-40' : ''}`}>
+            <div className="space-y-6">
               <div className="space-y-4">
                 <div className="flex items-center gap-2 mb-3">
                   <div className="w-1 h-6 bg-[#FFD233] rounded-full"></div>
@@ -623,32 +628,17 @@ export default function ResultScreen({ result, chatData, onRetry, onShare }: Res
                 </div>
               </div>
             </div>
-
-            {!isUnlocked && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center z-10 bg-black/80 backdrop-blur-md">
-                <div className="bg-gradient-to-br from-white to-gray-100 text-black p-8 rounded-2xl border-4 border-[#FFD233] shadow-[0_0_60px_rgba(255,210,51,0.4)] w-[90%] max-w-sm text-center">
-                  <div className="w-16 h-16 bg-gradient-to-br from-[#FFD233] to-[#FFA500] rounded-full border-4 border-black flex items-center justify-center mx-auto mb-4 shadow-lg">
-                    <Lock className="w-8 h-8 text-black" />
-                  </div>
-                  <h4 className="text-2xl font-bold mb-2">{t.resultScreen.secretReport.unlockTitle}</h4>
-                  <p className="text-sm text-gray-600 mb-6 font-bold">
-                    {t.resultScreen.secretReport.unlockDescription}
-                  </p>
-                  <button
-                    onClick={handleUnlock}
-                    className="neo-btn w-full bg-gradient-to-r from-black to-gray-800 text-white py-4 rounded-xl text-base flex items-center justify-center gap-2 hover:from-gray-800 hover:to-black transition shadow-lg"
-                  >
-                    <span className="text-[#FFD233]">▶</span> {t.resultScreen.secretReport.unlockButton}
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
         </motion.div>
       </motion.div>
 
-      {/* 광고 삽입 - 결과 페이지 중간 */}
+      {/* 광고 3 - SECRET REPORT 다음 */}
       <ResultPageAd type="banner" />
+
+      {/* 광고 4 - Footer 바로 위 */}
+      <div className="mt-8">
+        <ResultPageAd type="native" />
+      </div>
 
       {/* Footer */}
       <footer className="mt-12 text-center pb-8">
@@ -703,14 +693,6 @@ export default function ResultScreen({ result, chatData, onRetry, onShare }: Res
           </div>
         </div>
       </footer>
-
-      {/* 전면 광고 (SECRET REPORT 언락용) */}
-      <InterstitialAd
-        isOpen={showInterstitialAd}
-        onClose={() => setShowInterstitialAd(false)}
-        onComplete={handleAdComplete}
-        duration={5}
-      />
     </motion.section>
   )
 }

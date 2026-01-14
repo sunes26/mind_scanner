@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Home } from 'lucide-react'
+import ResultPageAd from '@/components/ads/ResultPageAd'
 
 export const metadata: Metadata = {
   title: '개인정보처리방침',
@@ -151,7 +152,12 @@ export default function PrivacyPage() {
             </p>
           </section>
 
+          {/* 광고 - 페이지 하단 */}
           <section className="border-t-2 border-black pt-6">
+            <ResultPageAd type="banner" />
+          </section>
+
+          <section className="border-t-2 border-black pt-6 mt-6">
             <p className="text-center text-gray-500 text-sm">
               문의사항이 있으시면 <a href="mailto:oceancode0321@gmail.com" className="text-blue-600 underline">oceancode0321@gmail.com</a>으로 연락해 주세요.
             </p>

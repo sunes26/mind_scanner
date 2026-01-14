@@ -355,6 +355,11 @@ export default function HomeScreen({ onFileUpload, onError }: HomeScreenProps) {
       </section>
       </div>
 
+      {/* 광고 - 업로드 섹션과 가이드 사이 */}
+      <div className="mt-12">
+        <ResultPageAd type="banner" />
+      </div>
+
       {/* How to Export Guide */}
       <section className="border-t-2 border-black pt-12" aria-labelledby="export-guide-heading">
         <h2 id="export-guide-heading" className="font-display text-3xl text-black mb-8 text-center">{t.home.exportGuide.title}</h2>

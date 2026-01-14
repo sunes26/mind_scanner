@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Home, Calendar, Clock, Tag, ArrowLeft } from 'lucide-react'
 import { blogPosts, getPostBySlug } from '../blogData'
+import ResultPageAd from '@/components/ads/ResultPageAd'
 import {
   SomeVsEojangGuide as SomeVsEojangContent,
   AIReplyPatternsGuide as AIReplyPatternsContent,
@@ -131,6 +132,11 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
           </div>
         </div>
 
+        {/* 광고 1 - Article Body 다음 */}
+        <div className="mb-8">
+          <ResultPageAd type="banner" />
+        </div>
+
         {/* CTA Section */}
         <div className="bg-gradient-to-r from-pink-500 to-purple-500 border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] rounded-2xl p-8 text-center text-white mb-8">
           <h3 className="text-2xl font-bold mb-3">
@@ -147,6 +153,11 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
           </Link>
         </div>
 
+        {/* 광고 2 - CTA 다음 */}
+        <div className="mb-8">
+          <ResultPageAd type="native" />
+        </div>
+
         {/* Related Posts - 추후 구현 가능 */}
         {/* <section className="mt-12">
           <h2 className="text-2xl font-bold mb-6">관련 포스트</h2>
@@ -155,6 +166,11 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
           </div>
         </section> */}
       </article>
+
+      {/* 광고 3 - Footer 위 */}
+      <div className="max-w-4xl mx-auto px-4 mb-8">
+        <ResultPageAd type="banner" />
+      </div>
 
       {/* Footer */}
       <footer className="mt-16 bg-white border-t-4 border-black py-8">
