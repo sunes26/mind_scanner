@@ -154,7 +154,7 @@ export default function PrivacyPage() {
 
           {/* 광고 - 페이지 하단 */}
           <section className="border-t-2 border-black pt-6">
-            <ResultPageAd type="banner" />
+            <ResultPageAd type="banner" position="privacy" />
           </section>
 
           <section className="border-t-2 border-black pt-6 mt-6">

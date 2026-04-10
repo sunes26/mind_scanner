@@ -1,7 +1,9 @@
 import type { Metadata } from 'next'
+import { Fragment } from 'react'
 import Link from 'next/link'
 import { Home, Calendar, Clock, Tag } from 'lucide-react'
 import { blogPosts, categories } from './blogData'
+import ResultPageAd from '@/components/ads/ResultPageAd'
 
 export const metadata: Metadata = {
   title: '블로그 - 카카오톡 대화 분석 가이드 & 연애 심리',
@@ -52,6 +54,11 @@ export default function BlogPage() {
           </p>
         </section>
 
+        {/* 광고 A - Hero 직후 */}
+        <div className="mb-12">
+          <ResultPageAd type="banner" position="blog-list-hero" />
+        </div>
+
         {/* Category Filter - 추후 구현 가능 */}
         {/* <section className="mb-8">
           <div className="flex gap-3 flex-wrap">
@@ -68,9 +75,9 @@ export default function BlogPage() {
 
         {/* Blog Posts Grid */}
         <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {blogPosts.map((post) => (
+          {blogPosts.map((post, index) => (
+            <Fragment key={post.slug}>
             <Link
-              key={post.slug}
               href={`/blog/${post.slug}`}
               className="group bg-white border-3 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-xl overflow-hidden hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 transition-all duration-200"
             >
@@ -123,6 +130,13 @@ export default function BlogPage() {
                 </div>
               </div>
             </Link>
+            {/* 광고 B - 6번째 카드 뒤 in-feed (전체 너비) */}
+            {index === 5 && (
+              <div className="col-span-full">
+                <ResultPageAd type="native" position="blog-list-feed" />
+              </div>
+            )}
+            </Fragment>
           ))}
         </section>
 

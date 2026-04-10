@@ -2,13 +2,48 @@
 
 import AdUnit from './AdUnit'
 
+/**
+ * 위치별 광고 슬롯 매핑
+ *
+ * AdSense 콘솔에서 위치별로 별도 광고 단위를 만들고 해당 슬롯 ID를
+ * 환경변수에 넣어두면, 리포트에서 위치별 수익을 분리 측정 가능.
+ *
+ * 주의: Next.js가 NEXT_PUBLIC_* 값을 빌드 타임에 인라인하므로,
+ * 아래 매핑은 반드시 정적 참조 형태로 작성해야 한다.
+ * (`process.env[dynamicKey]` 같은 동적 접근은 동작 안 함)
+ */
+const POSITION_SLOT_MAP = {
+  'home-hero': process.env.NEXT_PUBLIC_ADSENSE_SLOT_HOME_HERO,
+  'home-faq': process.env.NEXT_PUBLIC_ADSENSE_SLOT_HOME_FAQ,
+  'result-interest': process.env.NEXT_PUBLIC_ADSENSE_SLOT_RESULT_INTEREST,
+  'result-reply': process.env.NEXT_PUBLIC_ADSENSE_SLOT_RESULT_REPLY,
+  'result-secret': process.env.NEXT_PUBLIC_ADSENSE_SLOT_RESULT_SECRET,
+  'result-footer': process.env.NEXT_PUBLIC_ADSENSE_SLOT_RESULT_FOOTER,
+  'blog-list-hero': process.env.NEXT_PUBLIC_ADSENSE_SLOT_BLOG_LIST_HERO,
+  'blog-list-feed': process.env.NEXT_PUBLIC_ADSENSE_SLOT_BLOG_LIST_FEED,
+  'blog-post-top': process.env.NEXT_PUBLIC_ADSENSE_SLOT_BLOG_POST_TOP,
+  'blog-post-body': process.env.NEXT_PUBLIC_ADSENSE_SLOT_BLOG_POST_BODY,
+  'blog-post-cta': process.env.NEXT_PUBLIC_ADSENSE_SLOT_BLOG_POST_CTA,
+  'blog-post-footer': process.env.NEXT_PUBLIC_ADSENSE_SLOT_BLOG_POST_FOOTER,
+  'privacy': process.env.NEXT_PUBLIC_ADSENSE_SLOT_PRIVACY,
+  'terms': process.env.NEXT_PUBLIC_ADSENSE_SLOT_TERMS,
+} as const
+
+export type AdPosition = keyof typeof POSITION_SLOT_MAP
+
 interface ResultPageAdProps {
   type: 'banner' | 'native'
+  /**
+   * 광고 위치 식별자. 지정하면 해당 위치 전용 슬롯을 사용하고,
+   * 없으면 레거시 NEXT_PUBLIC_ADSENSE_SLOT_RESULT 로 fallback.
+   */
+  position?: AdPosition
 }
 
-export default function ResultPageAd({ type }: ResultPageAdProps) {
-  const slot = process.env.NEXT_PUBLIC_ADSENSE_SLOT_RESULT
+export default function ResultPageAd({ type, position }: ResultPageAdProps) {
   const clientId = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID
+  const positionSlot = position ? POSITION_SLOT_MAP[position] : undefined
+  const slot = positionSlot || process.env.NEXT_PUBLIC_ADSENSE_SLOT_RESULT
 
   if (type === 'banner') {
     return (

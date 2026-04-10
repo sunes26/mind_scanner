@@ -355,9 +355,9 @@ export default function HomeScreen({ onFileUpload, onError }: HomeScreenProps) {
       </section>
       </div>
 
-      {/* 광고 - 업로드 섹션과 가이드 사이 */}
+      {/* 광고 - 업로드 섹션과 가이드 사이 (히어로 직후 first-viewport) */}
       <div className="mt-12">
-        <ResultPageAd type="banner" />
+        <ResultPageAd type="banner" position="home-hero" />
       </div>
 
       {/* How to Export Guide */}
@@ -541,7 +541,7 @@ export default function HomeScreen({ onFileUpload, onError }: HomeScreenProps) {
 
       {/* 광고 삽입 - FAQ 아래 */}
       <div className="mt-8">
-        <ResultPageAd type="native" />
+        <ResultPageAd type="native" position="home-faq" />
       </div>
 
       {/* Footer */}

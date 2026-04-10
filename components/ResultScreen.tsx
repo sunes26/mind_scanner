@@ -430,7 +430,7 @@ export default function ResultScreen({ result, chatData, onRetry, onShare }: Res
           className="lg:col-span-4"
           variants={staggerItem}
         >
-          <ResultPageAd type="banner" />
+          <ResultPageAd type="banner" position="result-interest" />
         </motion.div>
 
         {/* Row 3 - Reply Patterns (Full Width, 4 columns) */}
@@ -515,7 +515,7 @@ export default function ResultScreen({ result, chatData, onRetry, onShare }: Res
           className="lg:col-span-4"
           variants={staggerItem}
         >
-          <ResultPageAd type="native" />
+          <ResultPageAd type="native" position="result-reply" />
         </motion.div>
 
         {/* SECRET REPORT (Full Width, 4 columns) */}
@@ -633,11 +633,11 @@ export default function ResultScreen({ result, chatData, onRetry, onShare }: Res
       </motion.div>
 
       {/* 광고 3 - SECRET REPORT 다음 */}
-      <ResultPageAd type="banner" />
+      <ResultPageAd type="banner" position="result-secret" />
 
       {/* 광고 4 - Footer 바로 위 */}
       <div className="mt-8">
-        <ResultPageAd type="native" />
+        <ResultPageAd type="native" position="result-footer" />
       </div>
 
       {/* Footer */}

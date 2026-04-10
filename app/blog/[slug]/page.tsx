@@ -125,6 +125,11 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
           </div>
         </header>
 
+        {/* 광고 0 - Article Header와 Body 사이 (본문 시작 직전, first-viewport) */}
+        <div className="mb-8">
+          <ResultPageAd type="banner" position="blog-post-top" />
+        </div>
+
         {/* Article Body */}
         <div className="bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] rounded-2xl p-8 mb-8">
           <div className="prose prose-lg max-w-none">
@@ -134,7 +139,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
 
         {/* 광고 1 - Article Body 다음 */}
         <div className="mb-8">
-          <ResultPageAd type="banner" />
+          <ResultPageAd type="banner" position="blog-post-body" />
         </div>
 
         {/* CTA Section */}
@@ -155,7 +160,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
 
         {/* 광고 2 - CTA 다음 */}
         <div className="mb-8">
-          <ResultPageAd type="native" />
+          <ResultPageAd type="native" position="blog-post-cta" />
         </div>
 
         {/* Related Posts - 추후 구현 가능 */}
@@ -169,7 +174,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
 
       {/* 광고 3 - Footer 위 */}
       <div className="max-w-4xl mx-auto px-4 mb-8">
-        <ResultPageAd type="banner" />
+        <ResultPageAd type="banner" position="blog-post-footer" />
       </div>
 
       {/* Footer */}
