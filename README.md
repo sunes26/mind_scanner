@@ -18,8 +18,9 @@
 - [시작하기](#-시작하기)
 - [환경 변수 설정](#-환경-변수-설정)
 - [개발 가이드](#-개발-가이드)
-- [배포](#-배포)
 - [프로젝트 구조](#-프로젝트-구조)
+- [배포](#-배포)
+- [광고 시스템](#-광고-시스템)
 - [문서](#-문서)
 - [기여하기](#-기여하기)
 - [라이선스](#-라이선스)
@@ -89,8 +90,10 @@
 - **Analytics**: Google Analytics (optional)
 
 ### Ads
-- **Ad Network**: Google AdSense
-- **Ad Types**: Display, Native, Interstitial
+- **Ad Network**: Google AdSense (수동 배치 전용, Auto Ads 비활성화)
+- **Ad Types**: Display Banner, Native In-feed, In-article
+- **Placement Strategy**: 14개 위치별 슬롯으로 리포트 분리 측정
+- **Policy Compliance**: 콘텐츠가 있는 경로에만 AdSense 스크립트 로드
 
 ---
 
@@ -136,11 +139,41 @@ OPENAI_API_KEY=sk-proj-your-api-key-here
 # Kakao JavaScript Key (선택)
 NEXT_PUBLIC_KAKAO_APP_KEY=your-kakao-app-key
 
-# Google AdSense (선택)
+# Google Analytics (선택)
+NEXT_PUBLIC_GA_ID=G-XXXXXXXXXX
+
+# === Google AdSense (선택) ===
 NEXT_PUBLIC_ADSENSE_CLIENT_ID=ca-pub-XXXXXXXXXXXXXXXX
+
+# 레거시(fallback) 슬롯 - 아래 위치별 슬롯 중 비어있는 position이 사용
 NEXT_PUBLIC_ADSENSE_SLOT_RESULT=XXXXXXXXXX
-NEXT_PUBLIC_ADSENSE_SLOT_INTERSTITIAL=XXXXXXXXXX
-NEXT_PUBLIC_ADSENSE_SLOT_SIDEBAR=XXXXXXXXXX
+
+# 위치별 광고 슬롯 (AdSense 콘솔 → 광고 단위 기준에서 개별 생성 후 입력)
+# 비워두면 위 NEXT_PUBLIC_ADSENSE_SLOT_RESULT로 자동 fallback
+
+# 홈 화면 (/)
+NEXT_PUBLIC_ADSENSE_SLOT_HOME_HERO=
+NEXT_PUBLIC_ADSENSE_SLOT_HOME_FAQ=
+
+# 분석 결과 화면
+NEXT_PUBLIC_ADSENSE_SLOT_RESULT_INTEREST=
+NEXT_PUBLIC_ADSENSE_SLOT_RESULT_REPLY=
+NEXT_PUBLIC_ADSENSE_SLOT_RESULT_SECRET=
+NEXT_PUBLIC_ADSENSE_SLOT_RESULT_FOOTER=
+
+# 블로그 목록 (/blog)
+NEXT_PUBLIC_ADSENSE_SLOT_BLOG_LIST_HERO=
+NEXT_PUBLIC_ADSENSE_SLOT_BLOG_LIST_FEED=
+
+# 블로그 글 (/blog/[slug])
+NEXT_PUBLIC_ADSENSE_SLOT_BLOG_POST_TOP=
+NEXT_PUBLIC_ADSENSE_SLOT_BLOG_POST_BODY=
+NEXT_PUBLIC_ADSENSE_SLOT_BLOG_POST_CTA=
+NEXT_PUBLIC_ADSENSE_SLOT_BLOG_POST_FOOTER=
+
+# 법적 고지
+NEXT_PUBLIC_ADSENSE_SLOT_PRIVACY=
+NEXT_PUBLIC_ADSENSE_SLOT_TERMS=
 ```
 
 ### 환경 변수 설명
@@ -149,10 +182,15 @@ NEXT_PUBLIC_ADSENSE_SLOT_SIDEBAR=XXXXXXXXXX
 |--------|------|------|
 | `OPENAI_API_KEY` | ✅ | OpenAI API 키. [발급 받기](https://platform.openai.com/api-keys) |
 | `NEXT_PUBLIC_KAKAO_APP_KEY` | ❌ | 카카오 공유 기능용 JavaScript 키 |
-| `NEXT_PUBLIC_ADSENSE_CLIENT_ID` | ❌ | Google AdSense 클라이언트 ID |
-| `NEXT_PUBLIC_ADSENSE_SLOT_*` | ❌ | 각 광고 단위별 슬롯 ID |
+| `NEXT_PUBLIC_GA_ID` | ❌ | Google Analytics 측정 ID |
+| `NEXT_PUBLIC_ADSENSE_CLIENT_ID` | ❌ | Google AdSense 클라이언트 ID (`ca-pub-*`) |
+| `NEXT_PUBLIC_ADSENSE_SLOT_RESULT` | ❌ | 레거시 fallback 슬롯. 위치별 슬롯이 비어있을 때 사용됨 |
+| `NEXT_PUBLIC_ADSENSE_SLOT_*` (14개) | ❌ | 위치별 슬롯. 비워두면 `_RESULT`로 자동 fallback |
 
-> 📘 **참고**: `NEXT_PUBLIC_` 접두사가 붙은 변수는 클라이언트에서 접근 가능합니다.
+> 📘 **참고**:
+> - `NEXT_PUBLIC_` 접두사가 붙은 변수는 클라이언트에서 접근 가능합니다
+> - AdSense 슬롯은 점진적으로 채울 수 있습니다 — 하나씩 생성할 때마다 해당 위치만 분리 측정됨
+> - 위치별 슬롯 14개의 역할은 [광고 시스템](#-광고-시스템) 섹션 참조
 
 ---
 
@@ -192,42 +230,57 @@ mind-scanner/
 ├── app/                      # Next.js App Router
 │   ├── api/                  # API 라우트
 │   │   ├── analyze/          # AI 분석 API
-│   │   ├── og/               # Open Graph 이미지 생성
+│   │   ├── og/               # Open Graph 이미지 생성 (Edge Runtime)
 │   │   └── chat/             # 채팅 분석 (레거시)
+│   ├── blog/                 # 블로그 (카카오톡 분석 가이드)
+│   │   ├── page.tsx          # 블로그 목록
+│   │   ├── [slug]/           # 블로그 글 (동적 라우트)
+│   │   ├── blogData.ts       # 포스트 메타데이터
+│   │   └── posts/            # 포스트 콘텐츠
+│   ├── privacy/              # 개인정보처리방침
+│   ├── terms/                # 이용약관
 │   ├── layout.tsx            # 루트 레이아웃
-│   ├── page.tsx              # 홈 페이지
-│   ├── globals.css           # 전역 스타일
-│   └── share/                # 공유 페이지
+│   ├── page.tsx              # 홈 페이지 (SPA: home/loading/result)
+│   ├── not-found.tsx         # 404 페이지
+│   ├── robots.ts             # robots.txt 생성
+│   ├── sitemap.ts            # sitemap.xml 생성
+│   └── globals.css           # 전역 스타일
 ├── components/               # React 컴포넌트
 │   ├── ads/                  # 광고 컴포넌트
-│   │   ├── AdSenseScript.tsx
-│   │   ├── AdUnit.tsx
-│   │   ├── InterstitialAd.tsx
-│   │   └── ResultPageAd.tsx
+│   │   ├── AdSenseScript.tsx # 경로 기반 조건부 스크립트 로더
+│   │   ├── AdUnit.tsx        # 기본 AdSense 광고 단위
+│   │   └── ResultPageAd.tsx  # 위치별 position prop 지원
 │   ├── Header.tsx            # 헤더
-│   ├── HomeScreen.tsx        # 홈 화면
-│   ├── LoadingScreen.tsx     # 로딩 화면
-│   ├── ResultScreen.tsx      # 결과 화면
+│   ├── HomeScreen.tsx        # 홈 화면 (파일 업로드 + 가이드 + FAQ)
+│   ├── LoadingScreen.tsx     # 로딩 화면 (광고 없음 - 정책)
+│   ├── ResultScreen.tsx      # 분석 결과 화면 (Bento Grid)
 │   ├── ErrorModal.tsx        # 에러 모달
+│   ├── ShareCard.tsx         # 공유 카드 (이미지 생성용)
 │   └── ShareModal.tsx        # 공유 모달
+├── contexts/                 # React Context
+│   └── LanguageContext.tsx   # 다국어 지원 (ko/en/ja/zh)
+├── translations/             # 번역 파일
 ├── hooks/                    # Custom Hooks
 │   ├── useCountUp.ts
 │   └── useScrollAnimation.ts
 ├── utils/                    # 유틸리티 함수
-│   ├── chatParser.ts         # 대화 파싱
-│   ├── sanitize.ts           # 입력 검증
+│   ├── chatParser.ts         # 카카오톡 대화 파싱
+│   ├── sanitize.ts           # 입력 검증 / XSS 방지
 │   ├── validation.ts         # 유효성 검사
-│   ├── animations.ts         # 애니메이션 설정
-│   └── shareUtils.ts         # 공유 유틸
+│   ├── animations.ts         # Framer Motion 애니메이션 설정
+│   ├── language.ts           # 언어 감지
+│   └── shareUtils.ts         # 공유 URL 생성
 ├── types/                    # TypeScript 타입 정의
 │   └── index.ts
+├── config/                   # 설정 파일
+├── scripts/                  # 빌드/유지보수 스크립트
 ├── public/                   # 정적 파일
 │   ├── icons/                # 아이콘
 │   └── manifest.json         # PWA manifest
 ├── docs/                     # 문서
 │   └── ADSENSE_SETUP.md      # AdSense 설정 가이드
 ├── middleware.ts             # Next.js 미들웨어 (Rate limiting)
-├── next.config.mjs           # Next.js 설정
+├── next.config.mjs           # Next.js 설정 (redirects, headers)
 ├── tailwind.config.ts        # Tailwind CSS 설정
 └── tsconfig.json             # TypeScript 설정
 ```
@@ -260,6 +313,140 @@ mind-scanner/
 4. **커스텀 도메인 연결** (선택)
    - Settings → Domains
    - 도메인 입력 및 DNS 설정
+
+---
+
+## 📢 광고 시스템
+
+### 개요
+
+본 프로젝트는 **Google AdSense 수동 배치(Manual Placement)** 방식을 사용합니다.
+Auto Ads는 정책 위반 리스크와 UX 제어 손실 때문에 사용하지 않습니다.
+
+### 정책 준수 아키텍처
+
+AdSense의 **"게시자 콘텐츠가 없는 화면에 광고" 정책**을 준수하기 위한 2중 방어 구조:
+
+#### 1. 경로 기반 스크립트 게이팅
+
+`components/ads/AdSenseScript.tsx`가 `usePathname()`으로 현재 경로를 검사하고,
+콘텐츠가 있는 경로에서만 `adsbygoogle.js`를 로드합니다.
+
+```typescript
+const ADSENSE_ALLOWED_PATHS: readonly RegExp[] = [
+  /^\/$/,                     // 홈
+  /^\/blog(\/.*)?$/,          // 블로그 목록 및 포스트
+  /^\/privacy(\/.*)?$/,       // 개인정보처리방침
+  /^\/terms(\/.*)?$/,         // 이용약관
+]
+```
+
+다음 경로는 AdSense 스크립트 자체가 로드되지 않습니다:
+- `/_not-found` (404 페이지)
+- `/api/*` (API 라우트)
+- 리다이렉트 경로
+
+#### 2. `/share/*` 서버 레벨 리다이렉트
+
+`next.config.mjs`에서 `/share/:path*`를 `/`로 **301 영구 리다이렉트**합니다.
+이전에는 `app/share/[id]/page.tsx`가 `redirect('/')` 한 줄만 있는 **순수 네비게이션 화면**이었으나,
+정책 위반 소지가 있어 페이지 자체를 제거했습니다.
+
+```javascript
+// next.config.mjs
+async redirects() {
+  return [
+    {
+      source: '/share/:path*',
+      destination: '/',
+      permanent: true,
+    },
+  ]
+}
+```
+
+> ⚠️ **트레이드오프**: 기존의 동적 OG 메타태그(공유 시 개인화된 점수 썸네일) 기능이 사라졌습니다.
+> 추후 콘텐츠가 있는 랜딩 페이지로 복원 가능합니다.
+
+### 위치별 슬롯 시스템
+
+`components/ads/ResultPageAd.tsx`는 선택적 `position` prop으로 위치별 슬롯을 지원합니다.
+AdSense 콘솔에서 위치별 광고 단위를 개별 생성하면 **리포트에서 위치별 수익을 분리 측정** 가능합니다.
+
+```typescript
+<ResultPageAd type="banner" position="home-hero" />
+```
+
+위치별 슬롯이 `.env`에 설정되지 않으면 레거시 `NEXT_PUBLIC_ADSENSE_SLOT_RESULT`로 자동 fallback되므로,
+**점진적 전환**이 가능합니다. 한 번에 14개 슬롯을 전부 생성할 필요 없이 하나씩 채워 넣을 수 있습니다.
+
+### 현재 광고 배치 현황 (총 14개)
+
+| 페이지 | 광고 수 | Position | 위치 설명 |
+|---|---:|---|---|
+| `/` (홈) | 2 | `home-hero` | 히어로/업로드 섹션 직후 (banner) |
+| | | `home-faq` | FAQ 섹션 아래 (native) |
+| `/` (결과 화면) | 4 | `result-interest` | Interest Score 다음 (banner) |
+| | | `result-reply` | Reply Patterns 다음 (native) |
+| | | `result-secret` | SECRET REPORT 다음 (banner) |
+| | | `result-footer` | Footer 바로 위 (native) |
+| `/blog` (목록) | 2 | `blog-list-hero` | Hero 섹션 직후 (banner) |
+| | | `blog-list-feed` | 6번째 카드 뒤 in-feed (native, col-span-full) |
+| `/blog/[slug]` (글) | 4 | `blog-post-top` | Article Header와 Body 사이 (banner) |
+| | | `blog-post-body` | Article Body 다음 (banner) |
+| | | `blog-post-cta` | CTA 섹션 다음 (native) |
+| | | `blog-post-footer` | Footer 위 (banner) |
+| `/privacy` | 1 | `privacy` | 페이지 하단 (banner) |
+| `/terms` | 1 | `terms` | 페이지 하단 (banner) |
+
+**광고가 표시되지 않는 화면** (정책 준수):
+- 로딩 화면 (SPA 내 `loading` state)
+- 404 페이지
+- 에러 모달, 공유 모달 (네비게이션 목적)
+
+### 새 광고 배치 추가하기
+
+1. **AdSense 콘솔에서 광고 단위 생성**
+   - 광고 → 광고 단위 기준 → 디스플레이 광고
+   - 이름을 position 키와 동일하게 지정 (예: `home-hero`)
+
+2. **환경변수 추가 또는 값 입력**
+   - `.env.local`에 `NEXT_PUBLIC_ADSENSE_SLOT_<POSITION>=1234567890` 추가
+   - 신규 position이라면 `ResultPageAd.tsx`의 `POSITION_SLOT_MAP`에도 추가
+
+3. **JSX에 배치**
+   ```tsx
+   import ResultPageAd from '@/components/ads/ResultPageAd'
+
+   <ResultPageAd type="banner" position="your-new-position" />
+   ```
+
+4. **⚠️ 정책 체크리스트**
+   - [ ] 해당 경로가 `ADSENSE_ALLOWED_PATHS`에 포함되어 있는가?
+   - [ ] 주변에 충분한 게시자 콘텐츠가 있는가?
+   - [ ] 버튼/네비게이션 옆에 배치되어 실수 클릭을 유발하지 않는가?
+   - [ ] 로딩/에러/404/리다이렉트 화면이 아닌가?
+
+### AdSense 재검토 요청 시 필수 작업
+
+1. **Vercel 환경변수 설정**
+   - Dashboard → Settings → Environment Variables
+   - `NEXT_PUBLIC_ADSENSE_CLIENT_ID` 추가
+   - 위치별 슬롯은 선택 (fallback 동작)
+
+2. **AdSense 콘솔에서 Auto Ads OFF**
+   - 광고 → 사이트별 설정 → 해당 사이트 → **자동 광고 OFF**
+   - ⚠️ 이 단계 누락 시 위 게이팅 구조와 무관하게 정책 위반 재발 가능
+
+3. **배포 후 프로덕션 검증**
+   ```
+   /share/result?score=85    → / 로 301 리다이렉트 확인
+   /존재하지않는경로            → DevTools Network 탭에서 adsbygoogle.js 없음 확인
+   /                          → adsbygoogle.js 로드됨 확인
+   ```
+
+4. **정책 센터에서 "검토 요청" 제출**
+   - AdSense 콘솔 → 정책 센터 → 해당 사이트 → "수정 완료 - 검토 요청"
 
 ---
 
