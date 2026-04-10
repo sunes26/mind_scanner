@@ -87,9 +87,17 @@ const nextConfig = {
     ]
   },
 
-  // 리다이렉트 설정 (필요시)
+  // 리다이렉트 설정
   async redirects() {
-    return []
+    return [
+      // /share/* 경로는 AdSense 정책상 "이동 목적 화면"에 해당하므로
+      // 렌더 없이 서버 301 리다이렉트로 홈으로 보냄
+      {
+        source: '/share/:path*',
+        destination: '/',
+        permanent: true,
+      },
+    ]
   },
 
   // 프로덕션 소스맵 비활성화 (보안 및 성능)
