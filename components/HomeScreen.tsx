@@ -14,6 +14,7 @@ import {
 } from '@/utils/validation'
 import ResultPageAd from '@/components/ads/ResultPageAd'
 import { useLanguage } from '@/contexts/LanguageContext'
+import { blogPosts } from '@/app/blog/blogData'
 
 interface HomeScreenProps {
   onFileUpload: (data: ChatData) => void
@@ -355,10 +356,33 @@ export default function HomeScreen({ onFileUpload, onError }: HomeScreenProps) {
       </section>
       </div>
 
-      {/* 광고 - 업로드 섹션과 가이드 사이 (히어로 직후 first-viewport) */}
-      <div className="mt-12">
-        <ResultPageAd type="banner" position="home-hero" />
-      </div>
+      {/* 분석 미리보기 섹션 */}
+      <section className="border-t-2 border-black pt-12" aria-labelledby="features-heading">
+        <h2 id="features-heading" className="font-display text-3xl text-black mb-4 text-center">이런 결과를 확인할 수 있어요</h2>
+        <p className="text-center text-gray-600 mb-8 max-w-xl mx-auto">카카오톡 대화 파일 하나로 AI가 심층 분석한 결과를 확인하세요. 답장 패턴부터 숨겨진 심리까지 낱낱이 파헤쳐 드립니다.</p>
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="neo-card bg-white p-6 rounded-xl text-center">
+            <div className="text-4xl mb-3" aria-hidden="true">💘</div>
+            <h3 className="font-bold text-lg text-gray-800 mb-2">호감도 점수</h3>
+            <p className="text-sm text-gray-600 leading-relaxed">답장 속도, 메시지 길이, 질문 빈도를 종합해 0~100점으로 상대방의 호감도를 정밀하게 측정합니다.</p>
+          </div>
+          <div className="neo-card bg-white p-6 rounded-xl text-center">
+            <div className="text-4xl mb-3" aria-hidden="true">💬</div>
+            <h3 className="font-bold text-lg text-gray-800 mb-2">답장 패턴 분석</h3>
+            <p className="text-sm text-gray-600 leading-relaxed">시간대별 답장 속도, 즉답률, 늦은 답장 패턴을 분석해 상대방의 관심도와 진심을 파악합니다.</p>
+          </div>
+          <div className="neo-card bg-white p-6 rounded-xl text-center">
+            <div className="text-4xl mb-3" aria-hidden="true">⚡</div>
+            <h3 className="font-bold text-lg text-gray-800 mb-2">대화 주도권</h3>
+            <p className="text-sm text-gray-600 leading-relaxed">먼저 말 걸기 횟수, 대화 시작·종료 패턴으로 두 사람의 관계에서 누가 더 적극적인지 분석합니다.</p>
+          </div>
+          <div className="neo-card bg-white p-6 rounded-xl text-center">
+            <div className="text-4xl mb-3" aria-hidden="true">🔍</div>
+            <h3 className="font-bold text-lg text-gray-800 mb-2">숨겨진 심리 보고서</h3>
+            <p className="text-sm text-gray-600 leading-relaxed">AI가 대화 전체를 종합해 상대방의 성향, 감정 상태, 관계의 온도를 비밀 리포트로 정리해 드립니다.</p>
+          </div>
+        </div>
+      </section>
 
       {/* How to Export Guide */}
       <section className="border-t-2 border-black pt-12" aria-labelledby="export-guide-heading">
@@ -539,7 +563,27 @@ export default function HomeScreen({ onFileUpload, onError }: HomeScreenProps) {
         </div>
       </section>
 
-      {/* 광고 삽입 - FAQ 아래 */}
+      {/* 블로그 아티클 섹션 */}
+      <section className="border-t-2 border-black pt-12" aria-labelledby="articles-heading">
+        <div className="flex items-center justify-between mb-8">
+          <h2 id="articles-heading" className="font-display text-3xl text-black">연애 심리 & 카톡 분석 가이드</h2>
+          <a href="/blog" className="neo-badge px-4 py-2 bg-white rounded-full text-sm font-bold hover:bg-gray-50 transition-colors whitespace-nowrap">전체 보기 →</a>
+        </div>
+        <div className="grid md:grid-cols-3 gap-4">
+          {blogPosts.slice(0, 3).map((post) => (
+            <a key={post.slug} href={`/blog/${post.slug}`} className="neo-card bg-white p-6 rounded-xl hover:shadow-lg transition-shadow block group">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="bg-[#FFD233] text-black text-xs font-bold px-2 py-1 rounded-full border border-black">{post.category}</span>
+                <span className="text-xs text-gray-400">{post.readTime} 읽기</span>
+              </div>
+              <h3 className="font-bold text-gray-800 mb-2 group-hover:text-[#4D96FF] transition-colors leading-snug line-clamp-2">{post.title}</h3>
+              <p className="text-sm text-gray-600 leading-relaxed line-clamp-2">{post.description}</p>
+            </a>
+          ))}
+        </div>
+      </section>
+
+      {/* 광고 삽입 - 블로그 아티클 아래 (콘텐츠 충분한 위치) */}
       <div className="mt-8">
         <ResultPageAd type="native" position="home-faq" />
       </div>
