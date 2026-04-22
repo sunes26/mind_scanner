@@ -282,10 +282,13 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // API 키 확인
+    // API 키 확인 — 디버그 로그 포함
+    console.log('[DEBUG] SPANLENS_API_KEY present:', !!process.env.SPANLENS_API_KEY)
+    console.log('[DEBUG] SPANLENS_API_KEY length:', (process.env.SPANLENS_API_KEY || '').length)
+    console.log('[DEBUG] SPANLENS_API_KEY prefix:', (process.env.SPANLENS_API_KEY || '').slice(0, 12))
+    console.log('[DEBUG] openai baseURL:', openai.baseURL)
     if (!process.env.SPANLENS_API_KEY) {
-      console.log('Spanlens API key not configured, returning mock data')
-      // API 키가 없으면 목업 데이터 반환
+      console.log('[DEBUG] FALLBACK: Spanlens API key not configured, returning mock data')
       return NextResponse.json(generateMockResult(p1, p2, analysis, lang))
     }
 
@@ -297,6 +300,7 @@ export async function POST(request: NextRequest) {
       lang,
     })
 
+    console.log('[DEBUG] Calling OpenAI via baseURL:', openai.baseURL)
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [
@@ -351,7 +355,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(validatedResult)
 
   } catch (error) {
-    console.error('Analysis error:', error)
+    // [DEBUG] 전체 에러 구조 출력 — 원인 파악용
+    console.error('[DEBUG] Analysis error type:', error?.constructor?.name)
+    console.error('[DEBUG] Analysis error message:', error instanceof Error ? error.message : String(error))
+    console.error('[DEBUG] Analysis error stack:', error instanceof Error ? error.stack : 'no stack')
+    if (error && typeof error === 'object') {
+      console.error('[DEBUG] Analysis error keys:', Object.keys(error))
+      console.error('[DEBUG] Analysis error JSON:', JSON.stringify(error, Object.getOwnPropertyNames(error)))
+    }
 
     // 에러 발생 시 목업 데이터 반환
     const body = await request.json().catch(() => ({}))
