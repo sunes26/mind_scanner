@@ -171,12 +171,14 @@ export async function GET(request: NextRequest) {
             {/* Relation Tag */}
             <div
               style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
                 backgroundColor: 'white',
                 border: '3px solid black',
                 borderRadius: '16px',
                 padding: '12px 24px',
                 boxShadow: '4px 4px 0px 0px black',
-                transform: 'rotate(1deg)',
               }}
             >
               <span style={{ fontSize: '28px', fontWeight: 'bold' }}>{relation}</span>
