@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import OpenAI from 'openai'
+import { createOpenAI } from '@spanlens/sdk/openai'
 
-const openai = new OpenAI({
-  apiKey: process.env.SPANLENS_API_KEY,
-  baseURL: 'https://spanlens-server.vercel.app/proxy/openai/v1',
-})
+const openai = createOpenAI()
 
 // 시스템 프롬프트 - 연애 심리 전문가 페르소나
 const SYSTEM_PROMPT = `너는 "연애 심리 분석가 닥터 하트"야. 

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import OpenAI from 'openai'
+import { createOpenAI } from '@spanlens/sdk/openai'
 import { isValidAnalysisResult, validateEnvironmentVariables, API_TIMEOUTS } from '@/utils/validation'
 import { sanitizeNumber } from '@/utils/sanitize'
 import { SupportedLanguage } from '@/utils/language'
@@ -11,9 +11,8 @@ if (!envCheck.isValid) {
   throw new Error(`Missing environment variables: ${envCheck.missingVars.join(', ')}`)
 }
 
-const openai = new OpenAI({
-  apiKey: process.env.SPANLENS_API_KEY,
-  baseURL: 'https://spanlens-server.vercel.app/proxy/openai/v1',
+// Spanlens 프록시 자동 연결 (baseURL + apiKey 자동 주입)
+const openai = createOpenAI({
   timeout: API_TIMEOUTS.ANALYSIS,
 })
 
