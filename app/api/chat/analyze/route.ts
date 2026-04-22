@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import OpenAI from 'openai'
 
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: process.env.SPANLENS_API_KEY,
+  baseURL: 'https://spanlens-server.vercel.app/proxy/openai/v1',
 })
 
 // 시스템 프롬프트 - 연애 심리 전문가 페르소나
@@ -96,8 +97,8 @@ export async function POST(request: NextRequest) {
     }
 
     // API 키 확인
-    if (!process.env.OPENAI_API_KEY) {
-      console.error('OpenAI API key not configured')
+    if (!process.env.SPANLENS_API_KEY) {
+      console.error('Spanlens API key not configured')
       // API 키가 없으면 목업 데이터 반환
       return NextResponse.json(generateMockResult(p1, p2, countP1, countP2))
     }

@@ -128,7 +128,7 @@ export function validateEnvironmentVariables(): {
   isValid: boolean
   missingVars: string[]
 } {
-  const requiredVars = ['OPENAI_API_KEY']
+  const requiredVars = ['SPANLENS_API_KEY']
   const missingVars: string[] = []
 
   for (const varName of requiredVars) {

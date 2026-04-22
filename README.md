@@ -251,7 +251,7 @@ mind-scanner/
 │   │   ├── AdUnit.tsx        # 기본 AdSense 광고 단위
 │   │   └── ResultPageAd.tsx  # 위치별 position prop 지원
 │   ├── Header.tsx            # 헤더
-│   ├── HomeScreen.tsx        # 홈 화면 (파일 업로드 + 가이드 + FAQ)
+│   ├── HomeScreen.tsx        # 홈 화면 (파일 업로드 + 분석 미리보기 + 가이드 + FAQ + 블로그 아티클)
 │   ├── LoadingScreen.tsx     # 로딩 화면 (광고 없음 - 정책)
 │   ├── ResultScreen.tsx      # 분석 결과 화면 (Bento Grid)
 │   ├── ErrorModal.tsx        # 에러 모달
@@ -380,12 +380,11 @@ AdSense 콘솔에서 위치별 광고 단위를 개별 생성하면 **리포트�
 위치별 슬롯이 `.env`에 설정되지 않으면 레거시 `NEXT_PUBLIC_ADSENSE_SLOT_RESULT`로 자동 fallback되므로,
 **점진적 전환**이 가능합니다. 한 번에 14개 슬롯을 전부 생성할 필요 없이 하나씩 채워 넣을 수 있습니다.
 
-### 현재 광고 배치 현황 (총 14개)
+### 현재 광고 배치 현황 (총 13개)
 
 | 페이지 | 광고 수 | Position | 위치 설명 |
 |---|---:|---|---|
-| `/` (홈) | 2 | `home-hero` | 히어로/업로드 섹션 직후 (banner) |
-| | | `home-faq` | FAQ 섹션 아래 (native) |
+| `/` (홈) | 1 | `home-faq` | 블로그 아티클 섹션 아래 (native) |
 | `/` (결과 화면) | 4 | `result-interest` | Interest Score 다음 (banner) |
 | | | `result-reply` | Reply Patterns 다음 (native) |
 | | | `result-secret` | SECRET REPORT 다음 (banner) |
@@ -403,6 +402,7 @@ AdSense 콘솔에서 위치별 광고 단위를 개별 생성하면 **리포트�
 - 로딩 화면 (SPA 내 `loading` state)
 - 404 페이지
 - 에러 모달, 공유 모달 (네비게이션 목적)
+- 홈 히어로/업로드 섹션 직후 (`home-hero` 슬롯 제거 — 콘텐츠 없는 화면 정책 위반 소지)
 
 ### 새 광고 배치 추가하기
 
@@ -471,7 +471,7 @@ AdSense 콘솔에서 위치별 광고 단위를 개별 생성하면 **리포트�
 
 우선 분리 대상 (수익 영향 순):
 1. `blog-post-top` — 블로그 본문 상단 (수익 가능성 최고)
-2. `home-hero` — 홈 히어로 직후 (노출 수 최대)
+2. `home-faq` — 홈 블로그 섹션 아래 (노출 수 최대)
 3. `result-secret` — 결과 화면 SECRET REPORT 다음 (몰입도 최고)
 4. `blog-list-feed` — 블로그 목록 in-feed
 5. `blog-post-body` — 블로그 본문 다음
