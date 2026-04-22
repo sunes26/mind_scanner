@@ -20,11 +20,6 @@ export function isValidAnalysisResult(data: unknown): data is AnalysisResult {
     return false
   }
 
-  if (typeof result.relation !== 'string' || result.relation.length === 0) {
-    console.error('Invalid relation:', result.relation)
-    return false
-  }
-
   if (typeof result.dominance !== 'string') {
     console.error('Invalid dominance:', result.dominance)
     return false

@@ -98,6 +98,7 @@ export async function GET(request: NextRequest) {
             >
               <div
                 style={{
+                  display: 'flex',
                   backgroundColor: '#3B82F6',
                   color: 'white',
                   padding: '8px 20px',
@@ -112,6 +113,7 @@ export async function GET(request: NextRequest) {
               <span style={{ fontSize: '32px' }}>💕</span>
               <div
                 style={{
+                  display: 'flex',
                   backgroundColor: '#EC4899',
                   color: 'white',
                   padding: '8px 20px',
@@ -183,6 +185,7 @@ export async function GET(request: NextRequest) {
             {/* CTA */}
             <div
               style={{
+                display: 'flex',
                 marginTop: '24px',
                 color: '#6B7280',
                 fontSize: '18px',
