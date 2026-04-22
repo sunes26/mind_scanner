@@ -314,7 +314,7 @@ export async function POST(request: NextRequest) {
         },
       ],
       temperature: 0.7,
-      max_tokens: 800,
+      max_tokens: 2500, // 이전 800은 복잡한 JSON 응답이 중간에 잘려서 JSON parse 실패 → mock fallback 됨
       response_format: { type: 'json_object' },
     })
 
