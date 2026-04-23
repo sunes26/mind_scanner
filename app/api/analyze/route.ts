@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createOpenAI } from '@spanlens/sdk/openai'
-import { SpanlensClient, observeOpenAI } from '@spanlens/sdk'
+import { SpanlensClient, observe } from '@spanlens/sdk'
 import { isValidAnalysisResult, validateEnvironmentVariables, API_TIMEOUTS } from '@/utils/validation'
 import { sanitizeNumber } from '@/utils/sanitize'
 import { SupportedLanguage } from '@/utils/language'
@@ -312,13 +312,20 @@ export async function POST(request: NextRequest) {
       metadata: { lang, messageCount: rawText.length },
     })
 
-    let completion
+    // Internal streaming: ask OpenAI for a streamed response, accumulate the
+    // chunks server-side, return one complete JSON to the client. The client
+    // contract is unchanged (still gets one final JSON), but Vercel's "first
+    // byte within 25 s" Edge limit is bypassed because the first chunk
+    // arrives in 1–2 s. Without this the analyze route times out on long
+    // (max_tokens 2500) responses.
+    let content: string
     try {
-      completion = await observeOpenAI(
+      content = await observe(
         trace,
-        'gpt-4o-mini · analysis',
-        (spanHeaders) =>
-          openai.chat.completions.create(
+        { name: 'gpt-4o-mini · analysis', spanType: 'llm' },
+        async (span) => {
+          const headers = span.traceHeaders()
+          const stream = await openai.chat.completions.create(
             {
               model: 'gpt-4o-mini',
               messages: [
@@ -326,11 +333,38 @@ export async function POST(request: NextRequest) {
                 { role: 'user', content: prompt },
               ],
               temperature: 0.7,
-              max_tokens: 2500, // 800은 복잡한 JSON 응답이 중간에 잘려서 JSON parse 실패 → mock fallback
+              max_tokens: 2500,
               response_format: { type: 'json_object' },
+              stream: true,
+              stream_options: { include_usage: true }, // ← last chunk carries token totals
             },
-            { headers: spanHeaders },
-          ),
+            { headers },
+          )
+
+          let text = ''
+          let usage: { prompt_tokens: number; completion_tokens: number; total_tokens: number } | null =
+            null
+          let model: string | undefined
+
+          for await (const chunk of stream) {
+            text += chunk.choices[0]?.delta?.content ?? ''
+            if (chunk.usage) usage = chunk.usage
+            if (chunk.model && !model) model = chunk.model
+          }
+
+          // Manually surface usage to the span (observe() would otherwise end
+          // it with zeros — it doesn't know about the stream-tail usage chunk).
+          if (usage) {
+            await span.end({
+              status: 'completed',
+              promptTokens: usage.prompt_tokens,
+              completionTokens: usage.completion_tokens,
+              totalTokens: usage.total_tokens,
+              metadata: model ? { model } : undefined,
+            })
+          }
+          return text
+        },
       )
     } catch (llmError) {
       await trace.end({
@@ -339,8 +373,6 @@ export async function POST(request: NextRequest) {
       })
       throw llmError
     }
-
-    const content = completion.choices[0].message.content
 
     if (!content) {
       await trace.end({ status: 'error', errorMessage: 'empty content' })

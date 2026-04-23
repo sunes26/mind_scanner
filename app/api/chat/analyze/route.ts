@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createOpenAI } from '@spanlens/sdk/openai'
-import { SpanlensClient, observeOpenAI } from '@spanlens/sdk'
+import { SpanlensClient, observe } from '@spanlens/sdk'
 
 const openai = createOpenAI()
 
@@ -121,13 +121,15 @@ export async function POST(request: NextRequest) {
       metadata: { messageCountP1: countP1, messageCountP2: countP2 },
     })
 
-    let completion
+    // Internal streaming — see app/api/analyze/route.ts for the rationale.
+    let content: string
     try {
-      completion = await observeOpenAI(
+      content = await observe(
         trace,
-        'gpt-4o-mini · quick-analysis',
-        (spanHeaders) =>
-          openai.chat.completions.create(
+        { name: 'gpt-4o-mini · quick-analysis', spanType: 'llm' },
+        async (span) => {
+          const headers = span.traceHeaders()
+          const stream = await openai.chat.completions.create(
             {
               model: 'gpt-4o-mini',
               messages: [
@@ -137,9 +139,34 @@ export async function POST(request: NextRequest) {
               temperature: 0.7,
               max_tokens: 1000,
               response_format: { type: 'json_object' },
+              stream: true,
+              stream_options: { include_usage: true },
             },
-            { headers: spanHeaders },
-          ),
+            { headers },
+          )
+
+          let text = ''
+          let usage: { prompt_tokens: number; completion_tokens: number; total_tokens: number } | null =
+            null
+          let model: string | undefined
+
+          for await (const chunk of stream) {
+            text += chunk.choices[0]?.delta?.content ?? ''
+            if (chunk.usage) usage = chunk.usage
+            if (chunk.model && !model) model = chunk.model
+          }
+
+          if (usage) {
+            await span.end({
+              status: 'completed',
+              promptTokens: usage.prompt_tokens,
+              completionTokens: usage.completion_tokens,
+              totalTokens: usage.total_tokens,
+              metadata: model ? { model } : undefined,
+            })
+          }
+          return text
+        },
       )
     } catch (llmError) {
       await trace.end({
@@ -148,8 +175,6 @@ export async function POST(request: NextRequest) {
       })
       throw llmError
     }
-
-    const content = completion.choices[0].message.content
 
     if (!content) {
       await trace.end({ status: 'error', errorMessage: 'empty content' })
