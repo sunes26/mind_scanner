@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@next/third-parties": "^16.0.8",
-    "@spanlens/sdk": "^0.2.2",
+    "@spanlens/sdk": "^0.2.3",
     "@vercel/og": "^0.8.5",
     "chart.js": "^4.4.1",
     "framer-motion": "^12.23.26",
