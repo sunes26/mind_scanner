@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createOpenAI } from '@spanlens/sdk/openai'
+import { SpanlensClient, observeOpenAI } from '@spanlens/sdk'
 import { isValidAnalysisResult, validateEnvironmentVariables, API_TIMEOUTS } from '@/utils/validation'
 import { sanitizeNumber } from '@/utils/sanitize'
 import { SupportedLanguage } from '@/utils/language'
@@ -14,6 +15,14 @@ if (!envCheck.isValid) {
 // Spanlens 프록시 자동 연결 (baseURL + apiKey 자동 주입)
 const openai = createOpenAI({
   timeout: API_TIMEOUTS.ANALYSIS,
+})
+
+// Agent tracing: groups the OpenAI call as a span under a named trace so
+// it shows up in spanlens.io/traces (not just /requests). Module-scope so
+// the underlying transport can keep a warm connection.
+const spanlens = new SpanlensClient({
+  apiKey: process.env.SPANLENS_API_KEY ?? '',
+  silent: true, // never throw from background ingest into the request path
 })
 
 // 시스템 프롬프트 - 연애 심리 전문가 페르소나 (언어별)
@@ -295,26 +304,46 @@ export async function POST(request: NextRequest) {
       lang,
     })
 
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        {
-          role: 'system',
-          content: getSystemPrompt(lang),
-        },
-        {
-          role: 'user',
-          content: prompt,
-        },
-      ],
-      temperature: 0.7,
-      max_tokens: 2500, // 이전 800은 복잡한 JSON 응답이 중간에 잘려서 JSON parse 실패 → mock fallback 됨
-      response_format: { type: 'json_object' },
+    // Spanlens trace — single LLM span. Even a 1-span trace is useful for
+    // /traces because it surfaces the model + tokens + latency + cost in
+    // one timeline entry, and links back to the underlying /requests row.
+    const trace = spanlens.startTrace({
+      name: 'analyze-couple-chat',
+      metadata: { lang, messageCount: rawText.length },
     })
+
+    let completion
+    try {
+      completion = await observeOpenAI(
+        trace,
+        'gpt-4o-mini · analysis',
+        (spanHeaders) =>
+          openai.chat.completions.create(
+            {
+              model: 'gpt-4o-mini',
+              messages: [
+                { role: 'system', content: getSystemPrompt(lang) },
+                { role: 'user', content: prompt },
+              ],
+              temperature: 0.7,
+              max_tokens: 2500, // 800은 복잡한 JSON 응답이 중간에 잘려서 JSON parse 실패 → mock fallback
+              response_format: { type: 'json_object' },
+            },
+            { headers: spanHeaders },
+          ),
+      )
+    } catch (llmError) {
+      await trace.end({
+        status: 'error',
+        errorMessage: llmError instanceof Error ? llmError.message : 'unknown',
+      })
+      throw llmError
+    }
 
     const content = completion.choices[0].message.content
 
     if (!content) {
+      await trace.end({ status: 'error', errorMessage: 'empty content' })
       throw new Error('Empty response from OpenAI')
     }
 
@@ -324,9 +353,14 @@ export async function POST(request: NextRequest) {
     } catch (parseError) {
       console.error('JSON parse error:', parseError)
       console.error('Content:', content)
+      await trace.end({ status: 'error', errorMessage: 'JSON parse failed' })
       // JSON 파싱 실패 시 Mock 데이터로 fallback
       return NextResponse.json(generateMockResult(p1, p2, analysis, lang))
     }
+
+    // Successful path — record completion. Subsequent validation may still
+    // reject the result, but at this point the LLM call itself succeeded.
+    await trace.end({ status: 'completed' })
 
     // 보안: 응답 구조 검증
     if (!isValidAnalysisResult(result)) {

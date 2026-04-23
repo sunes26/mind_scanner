@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createOpenAI } from '@spanlens/sdk/openai'
+import { SpanlensClient, observeOpenAI } from '@spanlens/sdk'
 
 const openai = createOpenAI()
+
+// Agent tracing — same pattern as app/api/analyze/route.ts.
+const spanlens = new SpanlensClient({
+  apiKey: process.env.SPANLENS_API_KEY ?? '',
+  silent: true,
+})
 
 // 시스템 프롬프트 - 연애 심리 전문가 페르소나
 const SYSTEM_PROMPT = `너는 "연애 심리 분석가 닥터 하트"야. 
@@ -109,30 +116,48 @@ export async function POST(request: NextRequest) {
       analysisData,
     })
 
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        {
-          role: 'system',
-          content: SYSTEM_PROMPT,
-        },
-        {
-          role: 'user',
-          content: prompt,
-        },
-      ],
-      temperature: 0.7,
-      max_tokens: 1000,
-      response_format: { type: 'json_object' },
+    const trace = spanlens.startTrace({
+      name: 'analyze-chat-quick',
+      metadata: { messageCountP1: countP1, messageCountP2: countP2 },
     })
 
+    let completion
+    try {
+      completion = await observeOpenAI(
+        trace,
+        'gpt-4o-mini · quick-analysis',
+        (spanHeaders) =>
+          openai.chat.completions.create(
+            {
+              model: 'gpt-4o-mini',
+              messages: [
+                { role: 'system', content: SYSTEM_PROMPT },
+                { role: 'user', content: prompt },
+              ],
+              temperature: 0.7,
+              max_tokens: 1000,
+              response_format: { type: 'json_object' },
+            },
+            { headers: spanHeaders },
+          ),
+      )
+    } catch (llmError) {
+      await trace.end({
+        status: 'error',
+        errorMessage: llmError instanceof Error ? llmError.message : 'unknown',
+      })
+      throw llmError
+    }
+
     const content = completion.choices[0].message.content
-    
+
     if (!content) {
+      await trace.end({ status: 'error', errorMessage: 'empty content' })
       throw new Error('Empty response from OpenAI')
     }
 
     const result = JSON.parse(content)
+    await trace.end({ status: 'completed' })
 
     // 응답 검증 및 기본값 설정
     const validatedResult = {
