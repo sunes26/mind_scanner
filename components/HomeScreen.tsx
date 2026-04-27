@@ -626,6 +626,13 @@ export default function HomeScreen({ onFileUpload, onError }: HomeScreenProps) {
           </div>
           <div className="flex items-center justify-center gap-4 text-xs text-gray-400 mt-2">
             <a
+              href="/about"
+              className="hover:text-gray-600 transition-colors underline"
+            >
+              서비스 소개
+            </a>
+            <span>•</span>
+            <a
               href="/privacy"
               className="hover:text-gray-600 transition-colors underline"
             >

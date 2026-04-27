@@ -6,8 +6,8 @@ export function MildangVsRealGuide() {
     <div className="space-y-6">
       <p className="text-lg leading-relaxed">
         "이 사람, 나한테 밀당하는 걸까? 아니면 진심일까?"
-        AI가 <strong>12만 건의 카톡 대화</strong>를 분석한 결과,
-        밀당과 진심에는 명확한 차이가 있었습니다!
+        카카오톡 대화를 자세히 들여다보면,
+        밀당과 진심 사이에는 반복적으로 나타나는 패턴 차이가 있습니다.
       </p>
 
       <div className="bg-purple-100 border-4 border-purple-400 rounded-xl p-6 text-center">

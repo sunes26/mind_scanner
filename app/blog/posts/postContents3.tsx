@@ -5,14 +5,17 @@ export function EmoticonPsychologyGuide() {
   return (
     <div className="space-y-6">
       <p className="text-lg leading-relaxed">
-        카톡에서 <strong>이모티콘 사용 빈도</strong>가 상대방의 진심을 알려준다는 사실, 알고 계셨나요?
-        AI가 분석한 결과, 이모티콘 하나하나에 숨겨진 심리가 있었습니다.
+        카톡에서 <strong>이모티콘 사용 빈도</strong>는 상대방의 감정 표현 의지를 보여주는 신호 중 하나입니다.
+        심리학적으로 이모티콘은 대면 대화에서의 표정과 비슷한 역할을 합니다.
+        관심 있는 상대일수록 자연스럽게 따뜻한 표현을 더 많이 사용하게 됩니다.
       </p>
 
-      <div className="bg-purple-100 border-4 border-purple-400 rounded-xl p-6 text-center">
-        <h3 className="text-2xl font-bold text-purple-700 mb-2">🎯 핵심 발견</h3>
-        <p className="text-gray-700">
-          호감도가 높을수록 <strong>이모티콘 사용 빈도가 3배 이상</strong> 높습니다!
+      <div className="bg-purple-100 border-4 border-purple-400 rounded-xl p-6">
+        <h3 className="text-xl font-bold text-purple-700 mb-2">알아두면 좋은 점</h3>
+        <p className="text-gray-700 text-sm">
+          이모티콘 사용량은 성격과 문화에 따라 개인차가 큽니다.
+          원래 이모티콘을 잘 안 쓰는 사람이 특정 상대에게만 쓴다면 그게 더 의미 있는 신호입니다.
+          변화의 방향을 보는 것이 절대적인 양보다 중요합니다.
         </p>
       </div>
 

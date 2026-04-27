@@ -5,8 +5,8 @@ export function WhoLikesMoreGuide() {
   return (
     <div className="space-y-6">
       <p className="text-lg leading-relaxed">
-        "우리 중에 누가 더 좋아하는 걸까?" 궁금하시죠?
-        AI가 분석한 <strong>10만 건의 카톡 대화</strong>에서 발견한 명확한 신호들을 알려드릴게요!
+        "우리 중에 누가 더 좋아하는 걸까?" 카카오톡 대화 패턴에는 이 질문에 대한 힌트가 숨어 있습니다.
+        물론 100% 확신할 수는 없지만, 여러 지표를 종합하면 관계의 온도 차이를 가늠해볼 수 있습니다.
       </p>
 
       <div className="bg-pink-100 border-4 border-pink-400 rounded-xl p-6 text-center">
@@ -21,10 +21,10 @@ export function WhoLikesMoreGuide() {
       </h2>
 
       <div className="bg-blue-50 border-3 border-blue-300 rounded-xl p-6">
-        <h3 className="text-xl font-bold text-blue-700 mb-4">AI 분석 결과</h3>
+        <h3 className="text-xl font-bold text-blue-700 mb-4">답장 속도가 보여주는 것</h3>
         <p className="text-gray-700 mb-4">
-          <strong className="text-blue-700">더 좋아하는 사람의 평균 답장 시간: 3.2분</strong><br />
-          덜 좋아하는 사람의 평균 답장 시간: 24.7분
+          더 관심 있는 쪽이 상대적으로 빨리 답장하는 경향이 있습니다.
+          하지만 직업, 생활 패턴에 따라 차이가 크기 때문에 <strong>속도 자체보다 일관성</strong>을 보는 게 더 중요합니다.
         </p>
 
         <div className="grid md:grid-cols-2 gap-4">
@@ -54,7 +54,8 @@ export function WhoLikesMoreGuide() {
 
       <div className="space-y-4">
         <p className="text-gray-700">
-          AI 분석 결과, 더 좋아하는 사람은 <strong>평균 메시지가 2.3배 더 깁니다</strong>.
+          더 관심 있는 쪽은 자연스럽게 <strong>더 길고 구체적인 메시지</strong>를 보내는 경향이 있습니다.
+          단답이 아닌, 상황 설명·질문·감정 표현이 섞인 메시지가 대표적입니다.
         </p>
 
         <div className="bg-gradient-to-r from-green-50 to-green-100 border-3 border-green-400 rounded-xl p-6">
@@ -98,14 +99,14 @@ export function WhoLikesMoreGuide() {
         <tbody className="bg-white">
           <tr className="bg-green-50">
             <td className="border-2 border-black p-3 font-bold">더 좋아함</td>
-            <td className="border-2 border-black p-3 text-center font-bold text-green-600">평균 2.8개</td>
+            <td className="border-2 border-black p-3 text-center font-bold text-green-600">질문이 더 많음</td>
             <td className="border-2 border-black p-3 text-sm">
               "뭐 해?", "밥 먹었어?", "주말엔 뭐 할 거야?"
             </td>
           </tr>
           <tr>
             <td className="border-2 border-black p-3 font-bold">덜 좋아함</td>
-            <td className="border-2 border-black p-3 text-center text-gray-600">평균 0.6개</td>
+            <td className="border-2 border-black p-3 text-center text-gray-600">질문이 적음</td>
             <td className="border-2 border-black p-3 text-sm">
               질문보다는 답변만 하는 경우 많음
             </td>
@@ -124,8 +125,8 @@ export function WhoLikesMoreGuide() {
           <div>
             <p className="font-bold text-pink-600 mb-2">💕 더 좋아하는 사람:</p>
             <div className="bg-white rounded-lg p-4 border-2 border-pink-200">
-              <p className="text-gray-700 mb-2">• 이모티콘 사용률: <strong className="text-pink-600">67%</strong></p>
-              <p className="text-gray-700 mb-2">• 하트 이모지: 대화 10개 중 3개</p>
+              <p className="text-gray-700 mb-2">• 이모티콘 사용 빈도가 높음</p>
+              <p className="text-gray-700 mb-2">• 하트 이모지 자주 사용</p>
               <p className="text-gray-700">• 다양한 표현: 😊🥰😂💕✨👍</p>
             </div>
           </div>
@@ -133,7 +134,7 @@ export function WhoLikesMoreGuide() {
           <div>
             <p className="font-bold text-gray-600 mb-2">❌ 덜 좋아하는 사람:</p>
             <div className="bg-white rounded-lg p-4 border-2 border-gray-200">
-              <p className="text-gray-700 mb-2">• 이모티콘 사용률: <strong>23%</strong></p>
+              <p className="text-gray-700 mb-2">• 이모티콘 사용 빈도가 낮음</p>
               <p className="text-gray-700 mb-2">• 하트 이모지: 거의 없음</p>
               <p className="text-gray-700">• ㅋㅋ, ㅇㅇ 같은 간단한 표현만</p>
             </div>
@@ -147,7 +148,8 @@ export function WhoLikesMoreGuide() {
 
       <div className="bg-purple-50 border-3 border-purple-300 rounded-xl p-6">
         <p className="text-lg text-gray-700 mb-4">
-          <strong className="text-purple-700">더 좋아하는 사람은 전체 대화의 58%를 먼저 시작</strong>합니다.
+          <strong className="text-purple-700">더 좋아하는 사람이 먼저 연락을 시작하는 경우가 많습니다.</strong>
+          물론 성격이 내성적이면 좋아해도 먼저 연락하기 어려울 수 있습니다.
         </p>
 
         <div className="bg-white rounded-lg p-5 border-2 border-purple-200">
@@ -259,7 +261,8 @@ export function ReplySpeedPsychologyGuide() {
     <div className="space-y-6">
       <p className="text-lg leading-relaxed">
         답장 속도에는 상대방의 <strong>진심이 숨어있습니다</strong>.
-        AI가 분석한 10만 건의 대화로 밝혀낸 답장 속도와 호감도의 관계를 공개합니다!
+        카카오톡 대화에서 나타나는 답장 속도와 관심도의 관계를 살펴봅니다.
+        단, 상황과 성격에 따라 다르기 때문에 맥락을 함께 봐야 합니다.
       </p>
 
       <div className="bg-blue-100 border-4 border-blue-400 rounded-xl p-6">
@@ -442,7 +445,8 @@ export function ReplySpeedPsychologyGuide() {
 
       <div className="bg-gradient-to-r from-blue-50 to-purple-50 border-3 border-blue-400 rounded-xl p-6">
         <p className="text-lg text-gray-700 mb-4">
-          AI 분석 결과, <strong className="text-blue-700">"일관성"이 속도보다 더 중요</strong>했습니다!
+          결국 <strong className="text-blue-700">"일관성"이 속도보다 더 중요</strong>합니다.
+          관심이 있다면 상황에 따라 늦게 답장하더라도 이유를 알려주거나, 다음에 다시 연락을 이어갑니다.
         </p>
 
         <div className="grid md:grid-cols-2 gap-4">

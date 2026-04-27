@@ -1,8 +1,8 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { Home, Calendar, Clock, Tag, ArrowLeft } from 'lucide-react'
-import { blogPosts, getPostBySlug } from '../blogData'
+import { Home, Calendar, Clock, Tag, ArrowLeft, User } from 'lucide-react'
+import { blogPosts, getPostBySlug, getPostsByCategory } from '../blogData'
 import ResultPageAd from '@/components/ads/ResultPageAd'
 import {
   SomeVsEojangGuide as SomeVsEojangContent,
@@ -87,7 +87,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
         {/* Article Header */}
         <header className="bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] rounded-2xl p-8 mb-8">
           {/* Category & Meta */}
-          <div className="flex items-center gap-4 mb-4 text-sm">
+          <div className="flex flex-wrap items-center gap-3 mb-4 text-sm">
             <span className="bg-yellow-300 border-2 border-black px-3 py-1 rounded-lg font-bold flex items-center gap-1">
               <Tag className="w-4 h-4" />
               {post.category}
@@ -99,6 +99,10 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
             <span className="flex items-center gap-1 text-gray-600">
               <Clock className="w-4 h-4" />
               {post.readTime}
+            </span>
+            <span className="flex items-center gap-1 text-gray-600">
+              <User className="w-4 h-4" />
+              Oceancode
             </span>
           </div>
 
@@ -125,11 +129,6 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
           </div>
         </header>
 
-        {/* 광고 0 - Article Header와 Body 사이 (본문 시작 직전, first-viewport) */}
-        <div className="mb-8">
-          <ResultPageAd type="banner" position="blog-post-top" />
-        </div>
-
         {/* Article Body */}
         <div className="bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] rounded-2xl p-8 mb-8">
           <div className="prose prose-lg max-w-none">
@@ -142,19 +141,16 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
           <ResultPageAd type="banner" position="blog-post-body" />
         </div>
 
-        {/* CTA Section */}
-        <div className="bg-gradient-to-r from-pink-500 to-purple-500 border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] rounded-2xl p-8 text-center text-white mb-8">
-          <h3 className="text-2xl font-bold mb-3">
-            우리 관계 분석해보고 싶으신가요?
-          </h3>
-          <p className="text-lg mb-6 opacity-90">
-            카톡 대화 파일만 있으면 10초 만에 호감도 측정 완료!
+        {/* CTA Section - 간소화 */}
+        <div className="bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] rounded-2xl p-6 text-center mb-8">
+          <p className="text-gray-700 mb-3">
+            직접 카톡 대화를 분석해보고 싶으신가요?
           </p>
           <Link
             href="/"
-            className="inline-block bg-white text-black px-8 py-4 rounded-xl font-bold text-lg hover:bg-gray-100 transition-colors shadow-lg"
+            className="inline-block bg-yellow-300 border-2 border-black text-black px-6 py-3 rounded-xl font-bold hover:bg-yellow-400 transition-colors"
           >
-            무료로 시작하기 💘
+            속마음 스캐너로 분석하기 →
           </Link>
         </div>
 
@@ -163,13 +159,8 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
           <ResultPageAd type="native" position="blog-post-cta" />
         </div>
 
-        {/* Related Posts - 추후 구현 가능 */}
-        {/* <section className="mt-12">
-          <h2 className="text-2xl font-bold mb-6">관련 포스트</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {Related posts...}
-          </div>
-        </section> */}
+        {/* Related Posts */}
+        <RelatedPosts currentSlug={params.slug} category={post.category} />
       </article>
 
       {/* 광고 3 - Footer 위 */}
@@ -196,6 +187,10 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
               </a>
             </div>
             <div className="flex items-center justify-center gap-4 text-xs text-gray-400 mt-2">
+              <Link href="/about" className="hover:text-gray-600 transition-colors underline">
+                서비스 소개
+              </Link>
+              <span>•</span>
               <Link href="/privacy" className="hover:text-gray-600 transition-colors underline">
                 개인정보처리방침
               </Link>
@@ -298,17 +293,43 @@ function KakaoTalkExportGuide() {
         </ul>
       </div>
 
-      <div className="bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-xl p-8 text-center mt-12">
-        <h3 className="text-2xl font-bold mb-3">파일 준비 완료!</h3>
-        <p className="text-lg mb-6">이제 속마음 스캐너로 분석을 시작하세요</p>
-        <Link
-          href="/"
-          className="inline-block bg-white text-black px-8 py-4 rounded-xl font-bold hover:bg-gray-100 transition-colors"
-        >
-          분석 시작하기 →
-        </Link>
+      <div className="bg-green-50 border-2 border-green-400 rounded-xl p-6 mt-12 text-center">
+        <h3 className="text-xl font-bold text-green-800 mb-2">파일 준비 완료!</h3>
+        <p className="text-gray-700 mb-3 text-sm">
+          내보내기가 완료된 .txt 파일을 속마음 스캐너에 업로드하면 AI가 대화 패턴을 분석합니다.
+        </p>
       </div>
     </div>
+  )
+}
+
+// 관련 포스트 컴포넌트
+function RelatedPosts({ currentSlug, category }: { currentSlug: string; category: string }) {
+  const related = getPostsByCategory(category)
+    .filter((p) => p.slug !== currentSlug)
+    .slice(0, 2)
+
+  if (related.length === 0) return null
+
+  return (
+    <section className="mt-4">
+      <h2 className="text-2xl font-bold text-black mb-4">관련 글</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {related.map((p) => (
+          <Link
+            key={p.slug}
+            href={`/blog/${p.slug}`}
+            className="bg-white border-3 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-xl p-5 hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 transition-all"
+          >
+            <span className="text-xs bg-yellow-200 border border-black px-2 py-0.5 rounded font-bold">
+              {p.category}
+            </span>
+            <p className="font-bold text-black mt-2 leading-snug text-sm">{p.title}</p>
+            <p className="text-gray-500 text-xs mt-1">{p.readTime} 읽기</p>
+          </Link>
+        ))}
+      </div>
+    </section>
   )
 }
 

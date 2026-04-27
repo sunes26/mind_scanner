@@ -6,20 +6,34 @@ export function SomeVsEojangGuide() {
     <div className="space-y-6">
       <p className="text-lg leading-relaxed">
         "이 사람, 나한테 관심 있는 걸까? 아니면 그냥 어장관리하는 걸까?"
-        10만 건의 카카오톡 대화를 AI로 분석한 결과, 썸과 어장에는 명확한 차이가 있었습니다.
+        카카오톡 대화 패턴을 분석해보면, 썸과 어장 사이에는 생각보다 명확한 차이가 존재합니다.
       </p>
 
-      <div className="bg-pink-50 border-4 border-pink-500 rounded-xl p-6">
-        <h2 className="text-2xl font-bold text-pink-700 mb-3">⚠️ 중요!</h2>
+      <div className="bg-blue-50 border-4 border-blue-400 rounded-xl p-6">
+        <h2 className="text-xl font-bold text-blue-700 mb-2">이 글에서 다루는 내용</h2>
         <p className="text-gray-700">
-          이 글의 모든 데이터는 속마음 스캐너의 AI 분석 결과를 기반으로 합니다.
-          실제 대화를 분석해보고 싶다면 아래 버튼을 클릭하세요!
+          심리학에서 말하는 <strong>호감의 행동 신호</strong>를 바탕으로, 카카오톡 대화에서 나타나는 5가지 패턴을 살펴봅니다.
+          물론 사람마다 표현 방식은 다르지만, 여러 지표를 종합하면 관계의 온도를 파악하는 데 도움이 됩니다.
+        </p>
+      </div>
+
+      <div className="bg-yellow-50 border-2 border-yellow-300 rounded-xl p-5">
+        <h3 className="font-bold text-yellow-800 mb-2">먼저 알아두세요</h3>
+        <p className="text-gray-700 text-sm">
+          아래 5가지 지표는 단독으로 판단하기보다 <strong>종합적으로</strong> 살펴보는 것이 중요합니다.
+          직업, 성격, 상황에 따라 개인차가 크기 때문에 하나의 신호만으로 결론 내리지 않는 게 좋습니다.
         </p>
       </div>
 
       <h2 className="text-3xl font-bold text-black border-b-4 border-black pb-3">
         1. 답장 속도와 일관성 📱
       </h2>
+
+      <p className="text-gray-700 leading-relaxed">
+        심리학 연구에 따르면, 우리는 중요하게 생각하는 대상에게 더 빠르게 반응합니다.
+        답장 속도 자체보다 <strong>일관성</strong>이 더 중요한 신호입니다.
+        바쁜 날도 짧게 답하거나 상황을 알려주는 행동이 진심의 표시입니다.
+      </p>
 
       <div className="grid md:grid-cols-2 gap-6">
         <div className="bg-green-50 border-3 border-green-500 rounded-xl p-6">
@@ -48,24 +62,33 @@ export function SomeVsEojangGuide() {
       </h2>
 
       <div className="bg-blue-50 border-3 border-blue-300 rounded-xl p-6">
-        <h3 className="text-xl font-bold text-blue-700 mb-4">AI 분석 결과</h3>
+        <h3 className="text-xl font-bold text-blue-700 mb-4">질문 빈도로 보는 관심도</h3>
         <p className="text-gray-700 mb-4">
-          호감도가 높은 사람은 <strong className="text-blue-700">시간당 평균 2.3개의 질문</strong>을 던집니다.
-          어장관리하는 사람은 평균 0.8개에 불과했습니다.
+          상대에게 관심이 많을수록 자연스럽게 <strong>질문을 더 많이</strong> 하게 됩니다.
+          단순히 답변만 하는 게 아니라, 상대방의 일상을 궁금해하는 것이 핵심입니다.
         </p>
 
         <div className="space-y-3">
           <div className="bg-white rounded-lg p-4 border-2 border-blue-200">
-            <p className="font-bold text-blue-700">✅ 썸 타는 사람의 질문</p>
+            <p className="font-bold text-blue-700">✅ 관심 있는 사람의 질문</p>
             <p className="text-gray-600 text-sm mt-1">
-              "오늘 뭐 했어?", "점심 뭐 먹었어?", "요즘 관심사가 뭐야?"
+              "오늘 뭐 했어?", "점심 뭐 먹었어?", "요즘 관심사가 뭐야?"<br />
+              → 구체적이고, 상대방의 일상에 관심을 보임
             </p>
           </div>
 
           <div className="bg-white rounded-lg p-4 border-2 border-red-200">
-            <p className="font-bold text-red-700">❌ 어장관리하는 사람의 질문</p>
+            <p className="font-bold text-red-700">❌ 관심 없는 사람의 답장</p>
             <p className="text-gray-600 text-sm mt-1">
-              "ㅇㅇ", "그래?", "ㅋㅋ" (질문 거의 없음)
+              "ㅇㅇ", "그래?", "ㅋㅋ" — 대화를 이어가지 않고 수동적으로만 반응함
+            </p>
+          </div>
+
+          <div className="bg-yellow-50 rounded-lg p-4 border-2 border-yellow-200">
+            <p className="font-bold text-yellow-700 text-sm">참고</p>
+            <p className="text-gray-600 text-sm mt-1">
+              내성적인 성격이거나 텍스트 대화를 불편해하는 사람은 질문이 적을 수 있습니다.
+              오프라인에서의 태도도 함께 보는 것이 더 정확합니다.
             </p>
           </div>
         </div>
@@ -162,30 +185,35 @@ export function SomeVsEojangGuide() {
         </div>
       </div>
 
-      <div className="bg-gradient-to-r from-yellow-400 to-orange-400 border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] rounded-2xl p-8 text-center mt-12">
-        <h3 className="text-3xl font-bold text-black mb-4">
-          우리 관계, 정확히 알고 싶다면?
-        </h3>
-        <p className="text-lg text-black mb-6">
-          속마음 스캐너의 AI가 10초 만에 분석해드립니다!
+      <div className="bg-gray-100 border-2 border-gray-300 rounded-xl p-6 mt-8">
+        <h3 className="text-xl font-bold text-gray-800 mb-3">💡 종합 판단 가이드</h3>
+        <p className="text-gray-700 mb-3">
+          5가지 지표 중 <strong>3개 이상 해당</strong>되면 비교적 명확한 신호라고 볼 수 있습니다.
         </p>
-        <Link
-          href="/"
-          className="inline-block bg-white text-black px-8 py-4 rounded-xl font-bold text-lg hover:bg-gray-100 transition-colors shadow-lg border-3 border-black"
-        >
-          무료로 지금 바로 분석하기 →
-        </Link>
+        <ul className="space-y-1 text-gray-700 text-sm">
+          <li>• <strong>4~5개 해당:</strong> 관심이 있을 가능성이 높습니다</li>
+          <li>• <strong>2~3개 해당:</strong> 아직 탐색 중이거나 관계가 초기 단계일 수 있습니다</li>
+          <li>• <strong>0~1개 해당:</strong> 어장관리거나 단순 친구 사이일 가능성이 있습니다</li>
+        </ul>
+        <p className="text-gray-600 text-sm mt-3">
+          단, 온라인 대화만으로는 한계가 있습니다. 실제로 만났을 때의 행동, 눈 맞춤, 몸짓 등 오프라인 신호도 함께 봐야 더 정확합니다.
+        </p>
       </div>
 
-      <div className="bg-gray-100 border-2 border-gray-300 rounded-xl p-6 mt-8">
-        <h3 className="text-xl font-bold text-gray-800 mb-3">💡 마무리 팁</h3>
-        <p className="text-gray-700 mb-3">
-          5가지 지표 중 <strong>3개 이상 해당</strong>되면 높은 확률로 그 범주에 속합니다.
-        </p>
-        <p className="text-gray-600 text-sm">
-          단, 사람마다 표현 방식이 다를 수 있으니 참고용으로만 활용하세요.
-          정확한 분석은 속마음 스캐너로! 😊
-        </p>
+      <div className="bg-purple-50 border-2 border-purple-300 rounded-xl p-6 mt-6">
+        <h3 className="text-xl font-bold text-purple-800 mb-3">관련해서 읽어보면 좋은 글</h3>
+        <ul className="space-y-2 text-sm">
+          <li>
+            <Link href="/blog/who-likes-more-kakaotalk" className="text-purple-700 hover:underline font-semibold">
+              → 카톡 대화로 누가 더 좋아하는지 알 수 있을까?
+            </Link>
+          </li>
+          <li>
+            <Link href="/blog/reply-speed-psychology" className="text-purple-700 hover:underline font-semibold">
+              → 답장 속도로 보는 호감도 심리 분석
+            </Link>
+          </li>
+        </ul>
       </div>
     </div>
   )
@@ -196,21 +224,20 @@ export function AIReplyPatternsGuide() {
   return (
     <div className="space-y-6">
       <p className="text-lg leading-relaxed">
-        10만 건의 카카오톡 대화를 AI로 분석한 결과, <strong>호감도가 높은 사람들의 답장에는 공통된 패턴</strong>이 있었습니다.
-        지금부터 그 비밀을 공개합니다!
+        카카오톡 대화를 들여다보면, <strong>호감도가 높은 사람들의 답장에는 공통된 패턴</strong>이 있습니다.
+        단순히 빠른 답장이 아니라 질문의 방식, 공감의 깊이, 이야기를 이어가는 방법에서 차이가 납니다.
       </p>
 
-      <div className="bg-yellow-50 border-4 border-yellow-400 rounded-xl p-6">
-        <h3 className="text-xl font-bold text-yellow-800 mb-3">📊 분석 데이터</h3>
-        <ul className="space-y-1 text-gray-700">
-          <li>• 총 분석 대화: 100,247건</li>
-          <li>• 평균 호감도: 72.3점</li>
-          <li>• 분석 기간: 2024.1 ~ 2024.12</li>
-        </ul>
+      <div className="bg-blue-50 border-4 border-blue-400 rounded-xl p-6">
+        <h3 className="text-xl font-bold text-blue-700 mb-2">이 글에 대하여</h3>
+        <p className="text-gray-700 text-sm">
+          이 글은 커뮤니케이션 심리학과 관계 연구에서 자주 언급되는 <strong>호감·친밀감 형성 요소</strong>를 카카오톡 상황에 맞게 정리한 내용입니다.
+          실제 연애 상황에서 참고용으로 활용하세요.
+        </p>
       </div>
 
       <h2 className="text-3xl font-bold text-black border-b-4 border-black pb-3">
-        TOP 1. 적절한 답장 속도 (85%가 사용) ⏰
+        TOP 1. 적절한 답장 속도 ⏰
       </h2>
 
       <div className="bg-blue-50 border-3 border-blue-300 rounded-xl p-6">
@@ -237,12 +264,13 @@ export function AIReplyPatternsGuide() {
       </div>
 
       <h2 className="text-3xl font-bold text-black border-b-4 border-black pb-3 mt-12">
-        TOP 2. 질문으로 대화 이어가기 (78%) 💬
+        TOP 2. 질문으로 대화 이어가기 💬
       </h2>
 
       <div className="space-y-4">
         <p className="text-gray-700">
-          호감도가 높은 사람들은 <strong>답장의 60% 이상에 질문</strong>을 포함합니다.
+          호감도가 높은 대화에서 눈에 띄는 공통점은 <strong>질문을 통해 대화를 계속 이어가는 것</strong>입니다.
+          단순히 내 이야기만 하거나, 상대의 말에 단답으로 끝내지 않습니다.
         </p>
 
         <div className="grid md:grid-cols-2 gap-6">
@@ -279,12 +307,13 @@ export function AIReplyPatternsGuide() {
       </div>
 
       <h2 className="text-3xl font-bold text-black border-b-4 border-black pb-3 mt-12">
-        TOP 3. 풍부한 이모티콘 사용 (73%) 😊💕
+        TOP 3. 풍부한 이모티콘 사용 😊💕
       </h2>
 
       <div className="bg-pink-50 border-3 border-pink-300 rounded-xl p-6">
         <p className="text-lg text-gray-700 mb-4">
-          호감도 80점 이상: <strong className="text-pink-600">메시지의 평균 65%에 이모티콘 포함</strong>
+          텍스트만으로는 감정 전달이 어렵기 때문에, 이모티콘은 따뜻함과 친근감을 전달하는 중요한 수단입니다.
+          관심 있는 상대에게는 자연스럽게 이모티콘 사용이 늘어나는 경향이 있습니다.
         </p>
 
         <div className="bg-white rounded-xl p-5 border-2 border-pink-200 mt-4">
@@ -359,12 +388,13 @@ export function AIReplyPatternsGuide() {
       </table>
 
       <h2 className="text-3xl font-bold text-black border-b-4 border-black pb-3 mt-12">
-        TOP 6. 먼저 인사하기 (65%) 👋
+        TOP 6. 먼저 인사하기 👋
       </h2>
 
       <div className="bg-yellow-100 border-3 border-yellow-400 rounded-xl p-6">
         <p className="text-gray-700 text-lg mb-4">
-          호감도 높은 사람들은 <strong>전체 대화의 40~50%를 먼저 시작</strong>합니다.
+          관심 있는 상대에게는 자연스럽게 먼저 연락하게 됩니다.
+          일방적으로 기다리기만 하는 관계는 점차 거리가 멀어지기 쉽습니다.
         </p>
         <div className="bg-white rounded-lg p-4 border-2 border-yellow-300">
           <h4 className="font-bold text-yellow-700 mb-2">효과적인 대화 시작</h4>
@@ -378,12 +408,13 @@ export function AIReplyPatternsGuide() {
       </div>
 
       <h2 className="text-3xl font-bold text-black border-b-4 border-black pb-3 mt-12">
-        TOP 7. 일상 공유하기 (62%) 📸
+        TOP 7. 일상 공유하기 📸
       </h2>
 
       <div className="space-y-4">
         <p className="text-gray-700">
-          사소한 일상을 공유하면 <strong>친밀감이 37% 증가</strong>합니다.
+          사소한 일상을 공유하는 것은 심리학에서 <strong>자기노출(self-disclosure)</strong>이라고 부릅니다.
+          자기노출이 늘어날수록 상대방도 마음을 열게 되는 경향이 있어, 관계의 친밀도를 높이는 데 효과적입니다.
         </p>
 
         <div className="grid md:grid-cols-2 gap-4">
@@ -434,19 +465,36 @@ export function AIReplyPatternsGuide() {
         </div>
       </div>
 
-      <div className="bg-gradient-to-r from-pink-500 to-purple-500 border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] rounded-2xl p-8 text-center mt-12">
-        <h3 className="text-3xl font-bold text-white mb-4">
-          우리 대화는 몇 점일까?
-        </h3>
-        <p className="text-lg text-white mb-6 opacity-90">
-          속마음 스캐너로 지금 바로 확인하세요!
+      <div className="bg-gray-100 border-2 border-gray-300 rounded-xl p-6 mt-10">
+        <h3 className="text-xl font-bold text-gray-800 mb-3">정리: 호감도 높은 답장의 핵심</h3>
+        <p className="text-gray-700 mb-3 text-sm">
+          위 10가지 패턴의 공통점은 <strong>상대방을 진심으로 대하는 태도</strong>에서 자연스럽게 나온다는 점입니다.
+          기술적으로 흉내 낼 수도 있지만, 진정한 관심 없이는 오래 유지하기 어렵습니다.
         </p>
-        <Link
-          href="/"
-          className="inline-block bg-white text-black px-8 py-4 rounded-xl font-bold text-lg hover:bg-gray-100 transition-colors shadow-lg"
-        >
-          무료 분석 시작하기 💘
-        </Link>
+        <ul className="space-y-1 text-gray-700 text-sm">
+          <li>✓ 적절한 답장 속도 유지 (너무 빠르거나 느리지 않게)</li>
+          <li>✓ 질문으로 대화를 이어가기</li>
+          <li>✓ 이모티콘으로 감정 전달</li>
+          <li>✓ 상대방 상황에 구체적으로 공감하기</li>
+          <li>✓ 먼저 연락하는 용기</li>
+          <li>✓ 사소한 일상 나누기</li>
+        </ul>
+      </div>
+
+      <div className="bg-purple-50 border-2 border-purple-300 rounded-xl p-5 mt-6">
+        <h3 className="text-lg font-bold text-purple-800 mb-2">함께 읽어보세요</h3>
+        <ul className="space-y-2 text-sm">
+          <li>
+            <Link href="/blog/how-to-distinguish-some-vs-eojang" className="text-purple-700 hover:underline font-semibold">
+              → 카톡으로 썸인지 어장인지 구별하는 방법 5가지
+            </Link>
+          </li>
+          <li>
+            <Link href="/blog/emoticon-usage-psychology" className="text-purple-700 hover:underline font-semibold">
+              → 이모티콘 사용량으로 알아보는 상대방 마음
+            </Link>
+          </li>
+        </ul>
       </div>
     </div>
   )
