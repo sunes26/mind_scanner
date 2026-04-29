@@ -22,7 +22,8 @@ const openai = createOpenAI({
 // the underlying transport can keep a warm connection.
 const spanlens = new SpanlensClient({
   apiKey: process.env.SPANLENS_API_KEY ?? '',
-  silent: true, // never throw from background ingest into the request path
+  silent: true,
+  onError: (err, ctx) => console.error('[spanlens]', ctx, err),
 })
 
 // 시스템 프롬프트 - 연애 심리 전문가 페르소나 (언어별)
@@ -352,8 +353,6 @@ export async function POST(request: NextRequest) {
             if (chunk.model && !model) model = chunk.model
           }
 
-          // Manually surface usage to the span (observe() would otherwise end
-          // it with zeros — it doesn't know about the stream-tail usage chunk).
           if (usage) {
             await span.end({
               status: 'completed',

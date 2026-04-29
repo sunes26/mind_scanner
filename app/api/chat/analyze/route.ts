@@ -8,6 +8,7 @@ const openai = createOpenAI()
 const spanlens = new SpanlensClient({
   apiKey: process.env.SPANLENS_API_KEY ?? '',
   silent: true,
+  onError: (err, ctx) => console.error('[spanlens]', ctx, err),
 })
 
 // 시스템 프롬프트 - 연애 심리 전문가 페르소나
