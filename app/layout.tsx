@@ -65,7 +65,11 @@ export const metadata: Metadata = {
   verification: {
     // google: 'YOUR_GOOGLE_VERIFICATION_CODE', // Google Search Console 인증 코드 발급 후 활성화
     other: {
-      'naver-site-verification': 'ca7d9e9325192484a6872107f38420227b08f97f',
+      // 네이버 서치어드바이저 소유 확인: mindscanner.site 등록분, www.mindscanner.site 등록분
+      'naver-site-verification': [
+        'ca7d9e9325192484a6872107f38420227b08f97f',
+        '923bc9e584e45194886bef4562c94b3011c66c0c',
+      ],
       // AdSense 사이트 소유 확인
       'google-adsense-account': siteConfig.adsensePublisherId,
     },
