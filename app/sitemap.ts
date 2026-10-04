@@ -1,56 +1,36 @@
 import { MetadataRoute } from 'next'
-import { blogPosts } from './blog/blogData'
+import { getPublishedPosts } from './blog/blogData'
+import { absoluteUrl } from '@/config/seo'
+
+export const revalidate = 3600
+
+// 정적 페이지의 실제 최종 수정일. 내용을 고치면 함께 갱신한다.
+const STATIC_PAGES = [
+  { path: '/', lastModified: '2026-10-04' },
+  { path: '/sample', lastModified: '2026-10-04' },
+  { path: '/about', lastModified: '2026-10-04' },
+  { path: '/privacy', lastModified: '2026-10-04' },
+  { path: '/terms', lastModified: '2026-10-04' },
+] as const
+
+const BLOG_LAUNCH_DATE = '2025-10-15'
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://mindscanner.site'
-  const currentDate = new Date()
-
-  // 블로그 포스트 sitemap 엔트리 생성
-  const blogEntries: MetadataRoute.Sitemap = blogPosts.map((post) => ({
-    url: `${baseUrl}/blog/${post.slug}`,
-    lastModified: new Date(post.date),
-    changeFrequency: 'weekly' as const,
-    priority: 0.8,
-  }))
+  const posts = getPublishedPosts()
+  const latestPostDate = posts.reduce((latest, post) => {
+    const modified = post.updated ?? post.date
+    return modified > latest ? modified : latest
+  }, BLOG_LAUNCH_DATE)
 
   return [
-    // 메인 페이지 (최우선)
-    {
-      url: baseUrl,
-      lastModified: currentDate,
-      changeFrequency: 'daily',
-      priority: 1.0,
-    },
-    // 블로그 목록 페이지
-    {
-      url: `${baseUrl}/blog`,
-      lastModified: currentDate,
-      changeFrequency: 'daily',
-      priority: 0.9,
-    },
-    // 개별 블로그 포스트들
-    ...blogEntries,
-    // 개인정보처리방침
-    {
-      url: `${baseUrl}/privacy`,
-      lastModified: currentDate,
-      changeFrequency: 'monthly',
-      priority: 0.5,
-    },
-    // 이용약관
-    {
-      url: `${baseUrl}/terms`,
-      lastModified: currentDate,
-      changeFrequency: 'monthly',
-      priority: 0.5,
-    },
-    // 서비스 소개 (About)
-    {
-      url: `${baseUrl}/about`,
-      lastModified: currentDate,
-      changeFrequency: 'monthly',
-      priority: 0.7,
-    },
-    // 404 페이지는 sitemap에서 제외
+    ...STATIC_PAGES.map((page) => ({
+      url: absoluteUrl(page.path),
+      lastModified: new Date(page.lastModified),
+    })),
+    { url: absoluteUrl('/blog'), lastModified: new Date(latestPostDate) },
+    ...posts.map((post) => ({
+      url: absoluteUrl(`/blog/${post.slug}`),
+      lastModified: new Date(post.updated ?? post.date),
+    })),
   ]
 }

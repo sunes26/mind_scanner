@@ -1,7 +1,7 @@
 'use client'
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react'
-import { SupportedLanguage, detectLanguage } from '@/utils/language'
+import React, { createContext, useContext, useState, ReactNode } from 'react'
+import { SupportedLanguage } from '@/utils/language'
 import { getTranslation, Translation } from '@/translations'
 
 interface LanguageContextType {
@@ -16,12 +16,8 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const [language, setLanguage] = useState<SupportedLanguage>('ko')
   const [t, setT] = useState<Translation>(getTranslation('ko'))
 
-  useEffect(() => {
-    // Detect browser language on mount
-    const detectedLang = detectLanguage()
-    setLanguage(detectedLang)
-    setT(getTranslation(detectedLang))
-  }, [])
+  // 브라우저 언어 자동 감지는 하지 않는다. 서버가 렌더링한 한국어 본문이
+  // 하이드레이션 후 영어로 바뀌면 검색엔진이 혼합 언어 페이지로 인식한다.
 
   const handleSetLanguage = (lang: SupportedLanguage) => {
     setLanguage(lang)

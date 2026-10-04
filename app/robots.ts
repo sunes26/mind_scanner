@@ -1,34 +1,26 @@
 import { MetadataRoute } from 'next'
+import { SITE_URL } from '@/config/seo'
+
+// /_next/ 는 막지 않는다. CSS·JS가 거기 있어서 막으면 검색엔진이 페이지를 제대로 렌더링하지 못한다.
+const AI_CRAWLERS = [
+  'GPTBot',
+  'OAI-SearchBot',
+  'ChatGPT-User',
+  'ClaudeBot',
+  'Claude-SearchBot',
+  'PerplexityBot',
+  'Google-Extended',
+  'Applebot-Extended',
+]
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = 'https://mindscanner.site'
-
   return {
     rules: [
-      // 모든 검색엔진 크롤러 허용
-      {
-        userAgent: '*',
-        allow: '/',
-        disallow: [
-          '/api/', // API 라우트 차단
-          '/_next/', // Next.js 내부 파일 차단
-          '/share/', // 동적 공유 페이지 차단 (중복 콘텐츠 방지)
-        ],
-        crawlDelay: 1, // 크롤링 딜레이 (초)
-      },
-      // Google 크롤러 특별 설정
-      {
-        userAgent: 'Googlebot',
-        allow: '/',
-        disallow: ['/api/', '/_next/', '/share/'],
-      },
-      // 네이버 크롤러 특별 설정
-      {
-        userAgent: 'Yeti',
-        allow: '/',
-        disallow: ['/api/', '/_next/', '/share/'],
-      },
+      { userAgent: '*', allow: '/', disallow: ['/api/'] },
+      // AI 검색·답변 엔진의 수집을 명시적으로 허용
+      { userAgent: AI_CRAWLERS, allow: '/', disallow: ['/api/'] },
     ],
-    sitemap: `${baseUrl}/sitemap.xml`,
+    sitemap: `${SITE_URL}/sitemap.xml`,
+    host: SITE_URL,
   }
 }

@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { ScanLine } from 'lucide-react'
 import { useLanguage } from '@/contexts/LanguageContext'
 
@@ -29,6 +30,13 @@ export default function Header({ currentScreen = 'home', onNavigateHome }: Heade
     }
   }
 
+  // 결과는 어디에도 저장되지 않으므로, 결과 화면에서 다른 페이지로 나가기 전에 확인을 받는다
+  const confirmLeaveResult = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    if (currentScreen === 'result' && !window.confirm(t.header.confirmBack)) {
+      event.preventDefault()
+    }
+  }
+
   return (
     <header className="sticky top-0 z-50 bg-[#FFD233] border-b-4 border-black" role="banner">
       <div className="container mx-auto px-4 h-16 flex justify-between items-center max-w-6xl">
@@ -53,21 +61,27 @@ export default function Header({ currentScreen = 'home', onNavigateHome }: Heade
           </span>
         </button>
 
-        <nav className="hidden md:flex gap-4" aria-label="메인 네비게이션">
+        <nav className="flex gap-3 md:gap-4 text-sm md:text-base" aria-label="메인 네비게이션">
           <button
-            className="font-bold hover:underline"
+            className="hidden md:inline font-bold hover:underline"
             aria-label={t.header.howToUse}
             onClick={() => handleNavigationClick('export-guide-heading', t.header.howToUse)}
           >
             {t.header.howToUse}
           </button>
           <button
-            className="font-bold hover:underline"
+            className="hidden md:inline font-bold hover:underline"
             aria-label={t.header.faq}
             onClick={() => handleNavigationClick('faq-heading', t.header.faq)}
           >
             {t.header.faq}
           </button>
+          <Link href="/sample" onClick={confirmLeaveResult} className="font-bold hover:underline whitespace-nowrap">
+            샘플 리포트
+          </Link>
+          <Link href="/blog" onClick={confirmLeaveResult} className="font-bold hover:underline whitespace-nowrap">
+            블로그
+          </Link>
         </nav>
       </div>
     </header>

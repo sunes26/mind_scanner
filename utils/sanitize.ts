@@ -18,19 +18,29 @@ export function sanitizeHtml(input: string): string {
   return input.replace(/[&<>"'/]/g, (char) => map[char])
 }
 
+const MAX_USER_NAME_LENGTH = 20
+
 /**
- * 사용자 이름을 sanitize (XSS 방지 + 길이 제한)
+ * 대화 참여자 이름 정리: 꺾쇠·제어 문자 제거, 공백 정리, 길이 제한.
+ * 화면 출력 시의 이스케이프는 React가 하므로 여기서 HTML 엔티티로 바꾸지 않는다.
+ * (엔티티로 바꾸면 메시지의 보낸 사람 이름과 달라져 통계가 연결되지 않는다)
  */
 export function sanitizeUserName(name: string): string {
-  // 1. HTML 태그 제거
-  const sanitized = sanitizeHtml(name)
-
-  // 2. 길이 제한 (20자)
-  const truncated = sanitized.slice(0, 20)
-
-  // 3. 앞뒤 공백 제거
-  return truncated.trim()
+  return name
+    .replace(/[<>\u0000-\u001F\u007F]/g, '')
+    .trim()
+    .slice(0, MAX_USER_NAME_LENGTH)
 }
+
+// 대화 파일은 화면에 HTML로 넣지 않으므로, 실제 마크업 형태만 막는다.
+// 'utm_content=' 같은 링크나 'eval(' 같은 일상적인 글자는 막지 않는다.
+const DANGEROUS_PATTERNS: ReadonlyArray<RegExp> = [
+  /<script[\s>]/i,
+  /<iframe[\s>]/i,
+  /<object[\s>]/i,
+  /<embed[\s>]/i,
+  /<[a-z][^>]*\son[a-z]+\s*=/i, // 태그 안의 onclick=, onerror= 등
+]
 
 /**
  * 파일 내용에서 위험한 패턴 감지
@@ -39,23 +49,11 @@ export function detectMaliciousContent(content: string): {
   isSafe: boolean
   reason?: string
 } {
-  const dangerousPatterns = [
-    /<script[\s\S]*?>[\s\S]*?<\/script>/gi,
-    /javascript:/gi,
-    /on\w+\s*=/gi, // onclick=, onerror= 등
-    /<iframe[\s\S]*?>/gi,
-    /<object[\s\S]*?>/gi,
-    /<embed[\s\S]*?>/gi,
-    /eval\(/gi,
-    /expression\(/gi,
-  ]
-
-  for (const pattern of dangerousPatterns) {
-    if (pattern.test(content)) {
-      return {
-        isSafe: false,
-        reason: `위험한 코드 패턴이 감지되었습니다: ${pattern.source}`,
-      }
+  const matched = DANGEROUS_PATTERNS.find((pattern) => pattern.test(content))
+  if (matched) {
+    return {
+      isSafe: false,
+      reason: `위험한 코드 패턴이 감지되었습니다: ${matched.source}`,
     }
   }
 

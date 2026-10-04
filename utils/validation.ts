@@ -1,58 +1,3 @@
-import { AnalysisResult } from '@/types'
-
-/**
- * 보안: API 응답 검증 및 타입 가드
- */
-
-/**
- * AnalysisResult 타입 가드
- */
-export function isValidAnalysisResult(data: unknown): data is AnalysisResult {
-  if (typeof data !== 'object' || data === null) {
-    return false
-  }
-
-  const result = data as Record<string, unknown>
-
-  // 필수 필드 검증
-  if (typeof result.score !== 'number' || result.score < 0 || result.score > 100) {
-    console.error('Invalid score:', result.score)
-    return false
-  }
-
-  if (typeof result.dominance !== 'string') {
-    console.error('Invalid dominance:', result.dominance)
-    return false
-  }
-
-  // attackTip은 string 또는 object
-  if (
-    typeof result.attackTip !== 'string' &&
-    (typeof result.attackTip !== 'object' || result.attackTip === null)
-  ) {
-    console.error('Invalid attackTip:', result.attackTip)
-    return false
-  }
-
-  // personalities 검증 (optional)
-  if (result.personalities !== undefined) {
-    if (typeof result.personalities !== 'object' || result.personalities === null) {
-      console.error('Invalid personalities:', result.personalities)
-      return false
-    }
-  }
-
-  // mutualPerception 검증 (optional)
-  if (result.mutualPerception !== undefined) {
-    if (typeof result.mutualPerception !== 'object' || result.mutualPerception === null) {
-      console.error('Invalid mutualPerception:', result.mutualPerception)
-      return false
-    }
-  }
-
-  return true
-}
-
 /**
  * 파일 검증 규칙
  */
@@ -72,15 +17,6 @@ export const MESSAGE_VALIDATION = {
   MIN_COUNT: 20,
   MIN_PARTICIPANTS: 2,
   MAX_NAME_LENGTH: 20,
-} as const
-
-/**
- * API 타임아웃
- */
-export const API_TIMEOUTS = {
-  FILE_PROCESSING: 1000,
-  ANALYSIS: 30000,
-  UPLOAD: 10000,
 } as const
 
 /**
@@ -114,26 +50,4 @@ export function isValidFileExtension(filename: string): boolean {
  */
 export function isValidMimeType(mimeType: string): boolean {
   return (FILE_VALIDATION.ALLOWED_MIME_TYPES as readonly string[]).includes(mimeType)
-}
-
-/**
- * 환경 변수 검증
- */
-export function validateEnvironmentVariables(): {
-  isValid: boolean
-  missingVars: string[]
-} {
-  const requiredVars = ['SPANLENS_API_KEY']
-  const missingVars: string[] = []
-
-  for (const varName of requiredVars) {
-    if (!process.env[varName]) {
-      missingVars.push(varName)
-    }
-  }
-
-  return {
-    isValid: missingVars.length === 0,
-    missingVars,
-  }
 }

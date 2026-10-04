@@ -8,10 +8,11 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     
     // URL 파라미터에서 데이터 추출
-    const score = searchParams.get('score') || '75'
-    const relation = searchParams.get('relation') || '💕 썸 타는 중'
-    const p1 = searchParams.get('p1') || '나'
-    const p2 = searchParams.get('p2') || '상대방'
+    // 외부에서 임의의 긴 글자를 넣어 이미지를 만들지 못하게 길이를 제한한다
+    const score = (searchParams.get('score') || '75').replace(/[^0-9]/g, '').slice(0, 3) || '75'
+    const relation = (searchParams.get('relation') || '💕 썸 타는 중').slice(0, 30)
+    const p1 = '나'
+    const p2 = '상대방'
 
     // 점수에 따른 배경색 결정
     const scoreNum = parseInt(score)
@@ -193,7 +194,7 @@ export async function GET(request: NextRequest) {
                 fontSize: '18px',
               }}
             >
-              나도 분석하러 가기 👉 mindscanner.com
+              나도 분석하러 가기 👉 mindscanner.site
             </div>
           </div>
         </div>
