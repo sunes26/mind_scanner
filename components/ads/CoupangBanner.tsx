@@ -59,10 +59,12 @@ export default function CoupangBanner({ variant, className = '' }: CoupangBanner
     setSize(getBannerSize(variant, containerWidth))
   }, [variant])
 
-  const placeholderHeight = variant === 'rect' ? 250 : 100
+  // 배너가 뜨기 전후로 높이가 바뀌지 않도록 자리를 미리 잡아 둔다 (레이아웃 밀림 방지)
+  const reservedHeightClass = variant === 'rect' ? 'min-h-[250px]' : 'min-h-[100px] sm:min-h-[140px]'
 
   return (
     <div ref={containerRef} className={`flex flex-col items-center ${className}`}>
+      <div className={`w-full flex justify-center ${reservedHeightClass}`}>
       {size ? (
         <iframe
           srcDoc={buildAdDocument(size)}
@@ -73,9 +75,8 @@ export default function CoupangBanner({ variant, className = '' }: CoupangBanner
           title="쿠팡 파트너스 광고"
           loading="lazy"
         />
-      ) : (
-        <div style={{ minHeight: `${placeholderHeight}px` }} aria-hidden="true" />
-      )}
+      ) : null}
+      </div>
       <p className="text-[10px] text-gray-400 mt-1 text-center">
         이 광고는 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.
       </p>

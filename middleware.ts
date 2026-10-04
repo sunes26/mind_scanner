@@ -8,15 +8,21 @@ const rateLimit = new Map<string, { count: number; resetTime: number }>()
 // Configuration
 const RATE_LIMIT_WINDOW = 60 * 1000 // 1 minute
 const MAX_REQUESTS_PER_WINDOW = 10 // 10 requests per minute
+const MAX_COMMENT_REQUESTS_PER_WINDOW = 3 // AI 코멘트(비용 발생)는 분당 3회
+const COMMENT_PATH = '/api/analyze/comment'
+
+function isCommentRequest(request: NextRequest): boolean {
+  return request.nextUrl.pathname.startsWith(COMMENT_PATH)
+}
 
 function getRateLimitKey(request: NextRequest): string {
   // Use IP address or fallback to a random identifier
   const forwarded = request.headers.get('x-forwarded-for')
   const ip = forwarded ? forwarded.split(',')[0] : request.ip || 'anonymous'
-  return `rate-limit:${ip}`
+  return `rate-limit:${isCommentRequest(request) ? 'comment' : 'analyze'}:${ip}`
 }
 
-function checkRateLimit(key: string): { allowed: boolean; remaining: number; resetTime: number } {
+function checkRateLimit(key: string, limit: number): { allowed: boolean; remaining: number; resetTime: number } {
   const now = Date.now()
   const record = rateLimit.get(key)
 
@@ -27,7 +33,7 @@ function checkRateLimit(key: string): { allowed: boolean; remaining: number; res
     return { allowed: true, remaining: MAX_REQUESTS_PER_WINDOW - 1, resetTime }
   }
 
-  if (record.count >= MAX_REQUESTS_PER_WINDOW) {
+  if (record.count >= limit) {
     // Rate limit exceeded
     return { allowed: false, remaining: 0, resetTime: record.resetTime }
   }
@@ -35,7 +41,7 @@ function checkRateLimit(key: string): { allowed: boolean; remaining: number; res
   // Increment count
   record.count++
   rateLimit.set(key, record)
-  return { allowed: true, remaining: MAX_REQUESTS_PER_WINDOW - record.count, resetTime: record.resetTime }
+  return { allowed: true, remaining: limit - record.count, resetTime: record.resetTime }
 }
 
 // Clean up old entries periodically
@@ -52,7 +58,8 @@ export function middleware(request: NextRequest) {
   // Only apply rate limiting to API routes
   if (request.nextUrl.pathname.startsWith('/api/analyze')) {
     const key = getRateLimitKey(request)
-    const { allowed, remaining, resetTime } = checkRateLimit(key)
+    const limit = isCommentRequest(request) ? MAX_COMMENT_REQUESTS_PER_WINDOW : MAX_REQUESTS_PER_WINDOW
+    const { allowed, remaining, resetTime } = checkRateLimit(key, limit)
 
     if (!allowed) {
       return NextResponse.json(
@@ -65,7 +72,7 @@ export function middleware(request: NextRequest) {
           status: 429,
           headers: {
             'Retry-After': String(Math.ceil((resetTime - Date.now()) / 1000)),
-            'X-RateLimit-Limit': String(MAX_REQUESTS_PER_WINDOW),
+            'X-RateLimit-Limit': String(limit),
             'X-RateLimit-Remaining': String(remaining),
             'X-RateLimit-Reset': String(resetTime),
           },
@@ -75,7 +82,7 @@ export function middleware(request: NextRequest) {
 
     // Add rate limit headers to successful responses
     const response = NextResponse.next()
-    response.headers.set('X-RateLimit-Limit', String(MAX_REQUESTS_PER_WINDOW))
+    response.headers.set('X-RateLimit-Limit', String(limit))
     response.headers.set('X-RateLimit-Remaining', String(remaining))
     response.headers.set('X-RateLimit-Reset', String(resetTime))
     return response

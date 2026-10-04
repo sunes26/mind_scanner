@@ -19,17 +19,27 @@ import {
 import { safePercentage, sanitizeNumber } from '@/utils/sanitize'
 import ResultPageAd from '@/components/ads/ResultPageAd'
 import { useLanguage } from '@/contexts/LanguageContext'
+import AiComment from '@/components/AiComment'
+import type { Level } from '@/types/scoring'
 
 ChartJS.register(ArcElement, Tooltip, Legend, LineElement, PointElement, LinearScale, CategoryScale, Filler)
+
+const LEVEL_STYLE: Record<Level, string> = {
+  high: 'bg-green-400 text-black',
+  mid: 'bg-yellow-300 text-black',
+  low: 'bg-gray-400 text-black',
+}
 
 interface ResultScreenProps {
   result: AnalysisResult
   chatData: ChatData
   onRetry: () => void
   onShare: () => void
+  /** 샘플 페이지처럼 다른 페이지 안에 넣을 때: 상단 버튼과 광고를 숨기고 제목을 h2로 낮춘다 */
+  embedded?: boolean
 }
 
-export default function ResultScreen({ result, chatData, onRetry, onShare }: ResultScreenProps) {
+export default function ResultScreen({ result, chatData, onRetry, onShare, embedded = false }: ResultScreenProps) {
   const { t } = useLanguage()
   const [displayScore, setDisplayScore] = useState(0)
   const [selectedPerson, setSelectedPerson] = useState<'p1' | 'p2'>('p1')
@@ -88,28 +98,19 @@ export default function ResultScreen({ result, chatData, onRetry, onShare }: Res
   const p1LaughPercent = safePercentage(p1Laugh, totalLaugh, 0)
   const p2LaughPercent = safePercentage(p2Laugh, totalLaugh, 0)
 
-  // Calculate interest score (관심도 지수) - 비율 기반
-  const calculateInterest = (stats: any, messageCount: number, messagePercent: number) => {
-    if (messageCount === 0) return 0
+  // 답장 카드: 대화가 이어지는 동안의 답장 간격 중간값(두 사람 평균).
+  // 긴 공백(자는 시간 등)에 흔들리는 평균 대신 쓴다. 값이 없으면 기존 평균으로 대신한다.
+  const replyMedians = [
+    chatData.scoringInput?.people.A.medianReplyMinutes,
+    chatData.scoringInput?.people.B.medianReplyMinutes,
+  ].filter((minutes): minutes is number => typeof minutes === 'number')
+  const typicalReplyMinutes =
+    replyMedians.length > 0
+      ? Math.round(replyMedians.reduce((sum, minutes) => sum + minutes, 0) / replyMedians.length)
+      : Math.round(((p1Stats?.avgReplyTime || 0) + (p2Stats?.avgReplyTime || 0)) / 2)
 
-    // 보안: 0으로 나누기 방지
-    const questionRatio = messageCount > 0 ? (stats?.questionCount || 0) / messageCount : 0
-    const emojiRatio = messageCount > 0 ? (stats?.emojiCount || 0) / messageCount : 0
-    const avgLength = sanitizeNumber(stats?.avgMessageLength || 0, 0, 1000, 0)
-
-    // 점수 계산 (0-100)
-    const questionScore = Math.min(questionRatio * 150, 15) // 질문 많으면 관심 높음 (최대 15점)
-    const emojiScore = Math.min(emojiRatio * 200, 15) // 이모지 많으면 감정표현 풍부 (최대 15점)
-    const lengthScore = Math.min(avgLength / 3, 20) // 긴 메시지 = 성의있음 (최대 20점)
-    const balanceScore = 50 - Math.abs(50 - messagePercent) // 균형잡힌 대화 (최대 50점)
-
-    const totalScore = questionScore + emojiScore + lengthScore + balanceScore
-    return sanitizeNumber(Math.round(totalScore), 0, 100, 0)
-  }
-
-  const p1Interest = calculateInterest(p1Stats, chatData.countP1, p1Percentage)
-  const p2Interest = calculateInterest(p2Stats, chatData.countP2, p2Percentage)
-  const avgInterest = sanitizeNumber(Math.round((p1Interest + p2Interest) / 2), 0, 100, 0)
+  // 관심도 지수는 서버가 계산해 준 값을 그대로 쓴다
+  const avgInterest = sanitizeNumber(result.interestScore ?? 0, 0, 100, 0)
 
   // Chart.js data and options for donut chart
   const chartData = {
@@ -232,36 +233,39 @@ export default function ResultScreen({ result, chatData, onRetry, onShare }: Res
   return (
     <motion.section
       className="w-full max-w-6xl py-8"
-      role="main"
       aria-labelledby="report-title"
       initial="hidden"
       animate="visible"
       variants={fadeIn}
     >
       {/* Top Action Bar */}
-      <header className="flex justify-between items-center mb-8">
-        <h1 id="report-title" className="text-3xl font-display">{t.resultScreen.reportTitle}</h1>
-        <nav className="flex gap-3" aria-label="분석 리포트 액션">
-          <button
-            onClick={() => {
-              if (window.confirm(t.resultScreen.confirmRetry)) {
-                onRetry()
-              }
-            }}
-            aria-label="새로운 대화 파일로 다시 분석하기"
-            className="neo-btn bg-white px-4 py-2 rounded-lg text-sm hover:bg-gray-100 flex items-center gap-2"
-          >
-            <RotateCcw className="w-4 h-4" aria-hidden="true" /> {t.resultScreen.retryButton}
-          </button>
-          <button
-            onClick={onShare}
-            aria-label="분석 결과 공유하기"
-            className="neo-btn bg-[#4D96FF] text-white px-4 py-2 rounded-lg text-sm hover:bg-[#3d84ff] flex items-center gap-2"
-          >
-            <Share2 className="w-4 h-4" aria-hidden="true" /> {t.resultScreen.shareButton}
-          </button>
-        </nav>
-      </header>
+      {embedded ? (
+        <h2 id="report-title" className="text-3xl font-display mb-8">{t.resultScreen.reportTitle}</h2>
+      ) : (
+        <header className="flex justify-between items-center mb-8">
+          <h1 id="report-title" className="text-3xl font-display">{t.resultScreen.reportTitle}</h1>
+          <nav className="flex gap-3" aria-label="분석 리포트 액션">
+            <button
+              onClick={() => {
+                if (window.confirm(t.resultScreen.confirmRetry)) {
+                  onRetry()
+                }
+              }}
+              aria-label="새로운 대화 파일로 다시 분석하기"
+              className="neo-btn bg-white px-4 py-2 rounded-lg text-sm hover:bg-gray-100 flex items-center gap-2"
+            >
+              <RotateCcw className="w-4 h-4" aria-hidden="true" /> {t.resultScreen.retryButton}
+            </button>
+            <button
+              onClick={onShare}
+              aria-label="분석 결과 공유하기"
+              className="neo-btn bg-[#4D96FF] text-white px-4 py-2 rounded-lg text-sm hover:bg-[#3d84ff] flex items-center gap-2"
+            >
+              <Share2 className="w-4 h-4" aria-hidden="true" /> {t.resultScreen.shareButton}
+            </button>
+          </nav>
+        </header>
+      )}
 
       {/* Bento Grid - Fixed Layout */}
       <motion.div
@@ -338,9 +342,7 @@ export default function ResultScreen({ result, chatData, onRetry, onShare }: Res
           <p className="text-sm font-bold text-gray-500 mb-1">{t.resultScreen.avgReply.title}</p>
           <p className="font-display text-4xl text-[#4D96FF]">
             {(() => {
-              const p1Avg = p1Stats?.avgReplyTime || 0
-              const p2Avg = p2Stats?.avgReplyTime || 0
-              const avgReply = p1Avg && p2Avg ? Math.round((p1Avg + p2Avg) / 2) : 0
+              const avgReply = typicalReplyMinutes
 
               if (avgReply === 0) return t.resultScreen.avgReply.immediately
               if (avgReply < 60) return t.resultScreen.avgReply.minutes.replace('{minutes}', avgReply.toString())
@@ -350,9 +352,7 @@ export default function ResultScreen({ result, chatData, onRetry, onShare }: Res
           </p>
           <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded border border-blue-200 mt-2">
             {(() => {
-              const p1Avg = p1Stats?.avgReplyTime || 0
-              const p2Avg = p2Stats?.avgReplyTime || 0
-              const avgReply = p1Avg && p2Avg ? Math.round((p1Avg + p2Avg) / 2) : 0
+              const avgReply = typicalReplyMinutes
 
               if (avgReply < 5) return t.resultScreen.avgReply.lightning
               if (avgReply < 30) return t.resultScreen.avgReply.lte
@@ -426,12 +426,14 @@ export default function ResultScreen({ result, chatData, onRetry, onShare }: Res
         </motion.div>
 
         {/* 광고 1 - Interest Score 다음 */}
-        <motion.div
-          className="lg:col-span-4"
-          variants={staggerItem}
-        >
-          <ResultPageAd type="banner" position="result-interest" />
-        </motion.div>
+        {!embedded && (
+          <motion.div
+            className="lg:col-span-4"
+            variants={staggerItem}
+          >
+            <ResultPageAd type="banner" position="result-interest" />
+          </motion.div>
+        )}
 
         {/* Row 3 - Reply Patterns (Full Width, 4 columns) */}
         <motion.div
@@ -476,7 +478,7 @@ export default function ResultScreen({ result, chatData, onRetry, onShare }: Res
             </div>
           </div>
 
-          <div id="answer-patterns-panel" role="tabpanel" aria-label={`${selectedName}의 답장 패턴 상세 정보`} className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div id="answer-patterns-panel" role="tabpanel" aria-label={`${selectedName}의 답장 패턴 상세 정보`} className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
             <div className={`text-center p-4 rounded-xl border-2 border-black/10 ${
               selectedPerson === 'p1' ? 'bg-red-50' : 'bg-blue-50'
             }`}>
@@ -503,6 +505,18 @@ export default function ResultScreen({ result, chatData, onRetry, onShare }: Res
                 {selectedPerson === 'p1' ? p1Laugh : p2Laugh}
               </div>
             </div>
+            <div className="text-center p-4 bg-gray-50 rounded-xl border-2 border-black/10">
+              <div className="text-xs text-gray-500 mb-1">{t.resultScreen.replyPatterns.starterCount}</div>
+              <div className="font-display text-3xl text-gray-700">
+                {t.resultScreen.replyPatterns.starterCountValue.replace('{count}', (selectedStats?.firstMessageCount || 0).toString())}
+              </div>
+            </div>
+            <div className="text-center p-4 bg-gray-50 rounded-xl border-2 border-black/10">
+              <div className="text-xs text-gray-500 mb-1">{t.resultScreen.replyPatterns.lateNightCount}</div>
+              <div className="font-display text-3xl text-gray-700">
+                {t.resultScreen.replyPatterns.lateNightCountValue.replace('{count}', (selectedStats?.lateNightMessages || 0).toString())}
+              </div>
+            </div>
           </div>
 
           <div className="mt-4 text-center text-sm text-gray-500">
@@ -511,12 +525,14 @@ export default function ResultScreen({ result, chatData, onRetry, onShare }: Res
         </motion.div>
 
         {/* 광고 2 - Reply Patterns 다음 */}
-        <motion.div
-          className="lg:col-span-4"
-          variants={staggerItem}
-        >
-          <ResultPageAd type="native" position="result-reply" />
-        </motion.div>
+        {!embedded && (
+          <motion.div
+            className="lg:col-span-4"
+            variants={staggerItem}
+          >
+            <ResultPageAd type="native" position="result-reply" />
+          </motion.div>
+        )}
 
         {/* SECRET REPORT (Full Width, 4 columns) */}
         <motion.div
@@ -566,38 +582,51 @@ export default function ResultScreen({ result, chatData, onRetry, onShare }: Res
                 </div>
               </div>
 
-              <div className="space-y-4">
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-1 h-6 bg-[#FFD233] rounded-full"></div>
-                  <h4 className="text-[#FFD233] font-bold text-lg">{t.resultScreen.secretReport.mutualPerceptionTitle}</h4>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="bg-gradient-to-br from-blue-600/20 to-blue-800/20 p-5 rounded-xl border-2 border-blue-500/30 relative overflow-hidden backdrop-blur-sm">
-                    <div className="absolute top-0 right-0 bg-gradient-to-br from-blue-500 to-blue-600 text-white text-[10px] font-bold px-3 py-1 rounded-bl-xl shadow-lg">
-                      {chatData.p1}
-                    </div>
-                    <p className="text-sm text-blue-300 font-bold mb-2">
-                      {t.resultScreen.secretReport.howTheyThink.replace('{name}', chatData.p2)}
-                    </p>
-                    <p className="text-xs text-gray-300 leading-relaxed border-t border-white/10 pt-3">
-                      {result.mutualPerception?.[chatData.p1]?.youThinkingAbout || t.resultScreen.secretReport.analyzingPerception}
-                    </p>
+              {result.dimensions && result.dimensions.length > 0 && (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-1 h-6 bg-[#FFD233] rounded-full"></div>
+                    <h4 className="text-[#FFD233] font-bold text-lg">{t.resultScreen.secretReport.dimensionsTitle}</h4>
                   </div>
-
-                  <div className="bg-gradient-to-br from-red-600/20 to-red-800/20 p-5 rounded-xl border-2 border-red-500/30 relative overflow-hidden backdrop-blur-sm">
-                    <div className="absolute top-0 right-0 bg-gradient-to-br from-red-500 to-red-600 text-white text-[10px] font-bold px-3 py-1 rounded-bl-xl shadow-lg">
-                      {chatData.p2}
-                    </div>
-                    <p className="text-sm text-red-300 font-bold mb-2">
-                      {t.resultScreen.secretReport.howTheyThink.replace('{name}', chatData.p1)}
-                    </p>
-                    <p className="text-xs text-gray-300 leading-relaxed border-t border-white/10 pt-3">
-                      {result.mutualPerception?.[chatData.p2]?.youThinkingAbout || t.resultScreen.secretReport.analyzingPerception}
-                    </p>
-                  </div>
+                  <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {result.dimensions.map((dimension) => (
+                      <li key={dimension.key} className="bg-white/5 p-4 rounded-xl border border-white/10">
+                        <div className="flex items-center justify-between gap-2 mb-2">
+                          <span className="font-bold text-white">{dimension.label}</span>
+                          <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${LEVEL_STYLE[dimension.level]}`}>
+                            {t.resultScreen.secretReport.levels[dimension.level]}
+                          </span>
+                        </div>
+                        <p className="text-xs text-gray-300 leading-relaxed">{dimension.comment}</p>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-              </div>
+              )}
+
+              {result.balance && result.balance.length > 0 && (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-1 h-6 bg-[#FFD233] rounded-full"></div>
+                    <h4 className="text-[#FFD233] font-bold text-lg">{t.resultScreen.secretReport.balanceTitle}</h4>
+                  </div>
+                  <ul className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {result.balance.map((finding) => (
+                      <li
+                        key={finding.title}
+                        className={`p-5 rounded-xl border-2 ${
+                          finding.tone === 'good' ? 'bg-green-600/10 border-green-500/30' : 'bg-yellow-600/10 border-yellow-500/30'
+                        }`}
+                      >
+                        <p className={`text-sm font-bold mb-2 ${finding.tone === 'good' ? 'text-green-300' : 'text-yellow-300'}`}>
+                          {finding.title}
+                        </p>
+                        <p className="text-xs text-gray-300 leading-relaxed">{finding.text}</p>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
 
               <div className="space-y-4">
                 <div className="flex items-center gap-2 mb-3">
@@ -627,72 +656,23 @@ export default function ResultScreen({ result, chatData, onRetry, onShare }: Res
                   </div>
                 </div>
               </div>
+              {!embedded && chatData.scoringInput && (
+                <AiComment stats={chatData.scoringInput} nameA={chatData.p1} nameB={chatData.p2} />
+              )}
             </div>
           </div>
         </motion.div>
       </motion.div>
 
       {/* 광고 3 - SECRET REPORT 다음 */}
-      <ResultPageAd type="banner" position="result-secret" />
+      {!embedded && <ResultPageAd type="banner" position="result-secret" />}
 
-      {/* 광고 4 - Footer 바로 위 */}
-      <div className="mt-8">
-        <ResultPageAd type="native" position="result-footer" />
-      </div>
-
-      {/* Footer */}
-      <footer className="mt-12 text-center pb-8">
-        <div className="space-y-2">
-          <p className="text-gray-400 text-sm font-mono">
-            {t.home.footer.copyright}
-          </p>
-          <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
-            <span>{t.home.footer.madeBy}</span>
-            <a
-              href="http://oceancode.site/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-bold text-[#4D96FF] hover:underline"
-            >
-              Oceancode
-            </a>
-          </div>
-          <div className="flex items-center justify-center gap-4 text-xs text-gray-400">
-            <a
-              href="mailto:oceancode0321@gmail.com"
-              className="hover:text-gray-600 transition-colors flex items-center gap-1"
-            >
-              <span>📧</span>
-              oceancode0321@gmail.com
-            </a>
-            <span>•</span>
-            <a
-              href="http://oceancode.site/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-gray-600 transition-colors flex items-center gap-1"
-            >
-              <span>🌐</span>
-              oceancode.site
-            </a>
-          </div>
-          <div className="flex items-center justify-center gap-4 text-xs text-gray-400 mt-2">
-            <a
-              href="/privacy"
-              className="hover:text-gray-600 transition-colors underline"
-            >
-              {t.home.footer.privacy}
-            </a>
-            <span>•</span>
-            <a
-              href="/terms"
-              className="hover:text-gray-600 transition-colors underline"
-            >
-              {t.home.footer.terms}
-            </a>
-          </div>
+      {/* 광고 4 - 리포트 맨 아래 */}
+      {!embedded && (
+        <div className="mt-8">
+          <ResultPageAd type="native" position="result-footer" />
         </div>
-      </footer>
+      )}
     </motion.section>
   )
 }

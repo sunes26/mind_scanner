@@ -13,10 +13,10 @@ export const en: Translation = {
 
   // Home Screen
   home: {
-    badge: 'Analyze chat patterns in 10 seconds',
+    badge: 'Reply time, who texts first, chat style',
     title: 'Discover Their\nTrue Feelings\nThrough Chat Analysis',
-    subtitle: 'Just upload your chat history\nAI analyzes response speed, emotions, and conversation dynamics\nCompletely and accurately.',
-    privacy: '#NoServerStorage #100%Anonymous',
+    subtitle: 'Upload a KakaoTalk chat export\nto see reply times, message share and question counts,\nplus a rule-based read on your affection score and chat style.\nYour chat text never leaves your browser.',
+    privacy: '#NoChatTextSent #NoSignUp',
     uploadSection: {
       title: 'Upload Chat File',
       subtitle: 'Only .txt files supported',
@@ -90,11 +90,11 @@ export const en: Translation = {
       },
       q2: {
         q: 'Q. Is my privacy safe?',
-        a: 'Yes, absolutely safe. All chat content is not stored on the server and is deleted immediately after analysis. Stateless architecture ensures perfect anonymity.',
+        a: 'The file is read and the statistics are computed in your browser, so your chat text and the names of the participants never leave it. Only numeric statistics (counts and ratios) are sent to our server, which calculates the scores and diagnoses with fixed rules. Nothing is stored, and results disappear when you close the page. Only if you press "Get AI comment" at the bottom of the report are the same numeric statistics sent to the OpenAI API.',
       },
       q3: {
         q: 'Q. What can you learn from chat patterns?',
-        a: 'AI comprehensively analyzes response speed, emoji usage, conversation dominance, question frequency, etc. to understand communication styles and relationship dynamics.',
+        a: 'You can see message share, average reply time, message length, question counts, who starts conversations and activity by time of day. From these statistics, the overall affection score, per-item diagnoses, chat style type and tailored advice are calculated with fixed rules.',
       },
       q4: {
         q: 'Q. What file formats are supported?',
@@ -102,11 +102,11 @@ export const en: Translation = {
       },
       q5: {
         q: 'Q. How accurate are the analysis results?',
-        a: 'We use the latest AI technology to analyze chat patterns. More conversations provide more accurate results. However, results are for reference and actual relationships are influenced by various factors.',
+        a: 'Counts such as messages, reply time and questions are taken directly from the file. The overall score and style diagnosis interpret those statistics with fixed rules, so the same file always gives the same result, but treat them as a reference. Read receipts, photos, calls and time spent together are not reflected.',
       },
     },
     footer: {
-      copyright: 'Mind Scanner © 2025. All Data Processed Locally.',
+      copyright: '© 2025–2026 Mind Scanner',
       madeBy: 'Made by',
       privacy: 'Privacy Policy',
       terms: 'Terms of Service',
@@ -131,7 +131,7 @@ export const en: Translation = {
       '🎭 Understanding chat styles...',
       '💡 Analyzing communication methods...',
       '🔍 Analyzing relationship dynamics...',
-      '🧠 AI personality type matching...',
+      '🧠 Matching chat style type...',
       '💭 Analyzing mutual perception patterns...',
       '🎯 Generating personalized advice...',
       '✍️ Writing final report...',
@@ -215,6 +215,10 @@ export const en: Translation = {
       questionCount: '❓ Questions',
       questionCountValue: '{count} times',
       laughCount: '🤣 Laugh Usage',
+      starterCount: '🙋 Conversations started',
+      starterCountValue: '{count}',
+      lateNightCount: '🌙 Late-night messages',
+      lateNightCountValue: '{count}',
       resultSummary: 'Chat pattern analysis results for {name}',
     },
 
@@ -227,10 +231,18 @@ export const en: Translation = {
       mutualPerceptionTitle: 'Mutual Perception Analysis',
       howTheyThink: 'How they think about {name}',
       analyzingPerception: 'Analyzing conversation patterns to understand mutual perception.',
-      aiAdviceTitle: 'AI Personalized Advice',
+      aiAdviceTitle: 'Personalized Advice',
+      dimensionsTitle: 'By category',
+      balanceTitle: 'Balance check',
+      levels: { high: 'High', mid: 'Medium', low: 'Low' },
+      aiCommentTitle: 'AI comment',
+      aiCommentDescription: 'Only numeric statistics are sent to the AI. Chat text and names are not sent.',
+      aiCommentButton: 'Get AI comment',
+      aiCommentLoading: 'Writing...',
+      aiCommentError: 'Could not get an AI comment. Please try again later.',
       customStrategy: 'Custom Strategy',
       unlockTitle: 'Unlock Secret Report',
-      unlockDescription: 'View detailed personality analysis and AI advice',
+      unlockDescription: 'View detailed personality analysis and personalized advice',
       unlockButton: 'Watch Ad to Unlock Free',
     },
   },
@@ -240,7 +252,7 @@ export const en: Translation = {
     fileEmpty: {
       title: 'File is Empty',
       message: 'Please upload a file containing chat messages.',
-      suggestion: 'At least 10 messages are required.',
+      suggestion: 'At least 20 messages are required.',
     },
     fileFormat: {
       title: 'Invalid File Format',
@@ -264,12 +276,12 @@ export const en: Translation = {
     },
     notEnoughMessages: {
       title: 'Not Enough Messages',
-      message: 'At least 10 messages are required.',
+      message: 'At least 20 messages are required.',
       suggestion: 'Please upload a file with more conversations.',
     },
     apiError: {
-      title: 'AI Analysis Failed',
-      message: 'Failed to receive response from AI server.',
+      title: 'Analysis Failed',
+      message: 'Failed to receive analysis results from the server.',
       suggestion: 'Please try again in a moment.',
     },
     retry: 'Try Again',
@@ -306,11 +318,11 @@ export const en: Translation = {
     title: 'Frequently Asked Questions',
     q1: {
       q: 'Is my privacy safe?',
-      a: 'Uploaded files are deleted immediately after analysis and are not stored anywhere.',
+      a: 'Chat text and names never leave your browser; only numeric statistics reach our server, and nothing is stored. Numeric statistics go to the OpenAI API only if you press the optional AI comment button.',
     },
     q2: {
       q: 'How accurate is it?',
-      a: 'AI comprehensively analyzes various factors including chat patterns, emoji usage, and response speed.',
+      a: 'Several statistics such as reply speed, message balance, emotional expression and contact consistency are combined with fixed rules. It is a reference, not a verdict on how the other person feels.',
     },
     q3: {
       q: 'How many people can be analyzed?',
@@ -318,7 +330,7 @@ export const en: Translation = {
     },
     q4: {
       q: 'How many messages are required?',
-      a: 'At least 10 messages are required. More messages provide better accuracy.',
+      a: 'At least 20 messages are required. More messages provide better accuracy.',
     },
   },
 

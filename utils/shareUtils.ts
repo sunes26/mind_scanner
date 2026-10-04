@@ -5,44 +5,31 @@ export interface ShareData {
   p2: string
 }
 
-// 공유 URL 생성
-export function generateShareUrl(data: ShareData): string {
-  const baseUrl = typeof window !== 'undefined'
-    ? window.location.origin
-    : 'https://mindscanner.site'
-  
-  const params = new URLSearchParams({
-    score: data.score.toString(),
-    relation: data.relation,
-    p1: data.p1,
-    p2: data.p2,
-  })
-  
-  return `${baseUrl}/share/result?${params.toString()}`
+// 공유 URL 생성. 결과 전용 페이지는 없으므로 홈 주소를 공유한다.
+// (참여자 이름을 URL에 싣지 않는다)
+export function generateShareUrl(_data: ShareData): string {
+  return typeof window !== 'undefined' ? window.location.origin : 'https://www.mindscanner.site'
 }
 
-// OG 이미지 URL 생성
+// OG 이미지 URL 생성. 참여자 이름은 넣지 않는다(이름이 서버·외부 서비스로 나가지 않게).
 export function generateOgImageUrl(data: ShareData): string {
   const baseUrl = typeof window !== 'undefined'
     ? window.location.origin
-    : 'https://mindscanner.site'
-  
+    : 'https://www.mindscanner.site'
+
   const params = new URLSearchParams({
     score: data.score.toString(),
     relation: data.relation,
-    p1: data.p1,
-    p2: data.p2,
   })
-  
+
   return `${baseUrl}/api/og?${params.toString()}`
 }
 
-// 공유 텍스트 생성
+// 공유 텍스트 생성 (이름 없이)
 export function generateShareText(data: ShareData): string {
   return `💘 [속마음 스캐너] 결과 공개!
 
-${data.p1} ❤️ ${data.p2}
-애정 지수: ${data.score}%
+우리의 애정 지수: ${data.score}%
 ${data.relation}
 
 나도 분석하러 가기 👉`
@@ -70,7 +57,7 @@ export function shareToKakao(data: ShareData): void {
   Kakao.Share.sendDefault({
     objectType: 'feed',
     content: {
-      title: `${data.p1}님과 ${data.p2}님의 애정 지수: ${data.score}%`,
+      title: `우리의 애정 지수: ${data.score}%`,
       description: `${data.relation} - 속마음 스캐너로 분석한 결과에요!`,
       imageUrl: imageUrl,
       link: {

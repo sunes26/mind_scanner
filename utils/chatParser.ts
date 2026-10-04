@@ -19,6 +19,9 @@ const PATTERNS = {
   // 날짜 구분선: "------------------- 2024년 1월 1일 월요일 -------------------"
   DATE_LINE: /^-+\s*(\d{4}년 \d{1,2}월 \d{1,2}일)/,
   
+  // 날짜로 시작하는 줄 (날짜 머리글, "2024년 1월 1일 오후 2:01: OO님이 들어왔습니다" 같은 알림)
+  DATE_START: /^\d{4}[년.]\s*\d{1,2}[월.]\s*\d{1,2}/,
+
   // 날짜만: "2024년 1월 1일" 또는 "2024. 1. 1."
   DATE_ONLY: /(\d{4})[년.]\s*(\d{1,2})[월.]\s*(\d{1,2})[일.]?/,
   
@@ -31,10 +34,10 @@ const PATTERNS = {
     /님이 나갔습니다/,
     /님을 초대했습니다/,
     /채팅방을 나갔습니다/,
-    /사진$/,
-    /동영상$/,
-    /파일:/,
-    /이모티콘$/,
+    /^사진(\s*\d+장)?$/,
+    /^동영상$/,
+    /^파일:/,
+    /^이모티콘$/,
     /삭제된 메시지입니다/,
   ],
   
@@ -42,111 +45,68 @@ const PATTERNS = {
   LAUGH: /[ㅋㅎ]{2,}|ㅋ{2,}|ㅎ{2,}|lol|LOL|ㄱㅋ{2,}/g,
 }
 
+// 이모지로 세는 코드 포인트 범위 [시작, 끝]
+const EMOJI_RANGES: ReadonlyArray<readonly [number, number]> = [
+  [0x1f000, 0x1f3fa], // 기호·음식·활동 등 (피부색 변경자 0x1F3FB-0x1F3FF 제외)
+  [0x1f400, 0x1faff], // 동물·사람·표정·사물 등
+  [0x2600, 0x27bf], // 날씨·기타 기호·딩벳
+  [0x231a, 0x231b],
+  [0x23e9, 0x23f3],
+  [0x23f8, 0x23fa],
+  [0x25aa, 0x25ab],
+  [0x25b6, 0x25b6],
+  [0x25c0, 0x25c0],
+  [0x25fb, 0x25fe],
+  [0x2934, 0x2935],
+  [0x2b05, 0x2b07],
+  [0x2b1b, 0x2b1c],
+  [0x2b50, 0x2b50],
+  [0x2b55, 0x2b55],
+  [0x3030, 0x3030],
+  [0x303d, 0x303d],
+  [0x3297, 0x3297],
+  [0x3299, 0x3299],
+]
+
+// 하트·애정 표현으로 보는 이모지
+const HEART_CODE_POINTS: ReadonlySet<number> = new Set([
+  0x2763, 0x2764, 0x2665, // ❣ ❤ ♥
+  0x1f493, 0x1f495, 0x1f496, 0x1f497, 0x1f498, 0x1f49d, 0x1f49e, // 💓💕💖💗💘💝💞
+  0x1f60d, 0x1f970, 0x1f618, 0x1f63b, 0x1f48b, // 😍🥰😘😻💋
+])
+
+/** 문자열을 코드 포인트 배열로 (서로게이트 쌍을 한 글자로 취급) */
+function toCodePoints(content: string): number[] {
+  return Array.from(content, (char) => char.codePointAt(0) ?? 0)
+}
+
+function isEmojiCodePoint(codePoint: number): boolean {
+  return EMOJI_RANGES.some(([start, end]) => codePoint >= start && codePoint <= end)
+}
+
 /**
- * 이모지 개수 세기 (ES5 호환)
+ * 이모지 개수 세기 (이모지 하나를 1로 센다)
  */
 function countEmojis(content: string): number {
-  // 이모지 범위를 개별적으로 체크
-  const emojiRanges = [
-    /[\uD83C-\uDBFF\uDC00-\uDFFF]/g,  // Surrogate pairs (대부분의 이모지)
-    /[\u2600-\u26FF]/g,                // Misc symbols
-    /[\u2700-\u27BF]/g,                // Dingbats
-    /[\u231A-\u231B]/g,                // Watch, Hourglass
-    /[\u23E9-\u23F3]/g,                // Media symbols
-    /[\u23F8-\u23FA]/g,                // Media symbols
-    /[\u25AA-\u25AB]/g,                // Squares
-    /[\u25B6]/g,                       // Play button
-    /[\u25C0]/g,                       // Reverse button
-    /[\u25FB-\u25FE]/g,                // Squares
-    /[\u2614-\u2615]/g,                // Umbrella, Hot beverage
-    /[\u2648-\u2653]/g,                // Zodiac
-    /[\u267F]/g,                       // Wheelchair
-    /[\u2693]/g,                       // Anchor
-    /[\u26A1]/g,                       // High voltage
-    /[\u26AA-\u26AB]/g,                // Circles
-    /[\u26BD-\u26BE]/g,                // Sports
-    /[\u26C4-\u26C5]/g,                // Weather
-    /[\u26CE]/g,                       // Ophiuchus
-    /[\u26D4]/g,                       // No entry
-    /[\u26EA]/g,                       // Church
-    /[\u26F2-\u26F3]/g,                // Fountain, Golf
-    /[\u26F5]/g,                       // Sailboat
-    /[\u26FA]/g,                       // Tent
-    /[\u26FD]/g,                       // Fuel pump
-    /[\u2702]/g,                       // Scissors
-    /[\u2705]/g,                       // Check mark
-    /[\u2708-\u270D]/g,                // Various
-    /[\u270F]/g,                       // Pencil
-    /[\u2712]/g,                       // Black nib
-    /[\u2714]/g,                       // Check mark
-    /[\u2716]/g,                       // X mark
-    /[\u271D]/g,                       // Cross
-    /[\u2721]/g,                       // Star of David
-    /[\u2728]/g,                       // Sparkles
-    /[\u2733-\u2734]/g,                // Eight spoked asterisk
-    /[\u2744]/g,                       // Snowflake
-    /[\u2747]/g,                       // Sparkle
-    /[\u274C]/g,                       // Cross mark
-    /[\u274E]/g,                       // Cross mark
-    /[\u2753-\u2755]/g,                // Question marks
-    /[\u2757]/g,                       // Exclamation
-    /[\u2763-\u2764]/g,                // Hearts
-    /[\u2795-\u2797]/g,                // Math symbols
-    /[\u27A1]/g,                       // Right arrow
-    /[\u27B0]/g,                       // Curly loop
-    /[\u27BF]/g,                       // Double curly loop
-    /[\u2934-\u2935]/g,                // Arrows
-    /[\u2B05-\u2B07]/g,                // Arrows
-    /[\u2B1B-\u2B1C]/g,                // Squares
-    /[\u2B50]/g,                       // Star
-    /[\u2B55]/g,                       // Circle
-    /[\u3030]/g,                       // Wavy dash
-    /[\u303D]/g,                       // Part alternation mark
-    /[\u3297]/g,                       // Circled ideograph congratulation
-    /[\u3299]/g,                       // Circled ideograph secret
-  ]
-  
-  let count = 0
-  for (const regex of emojiRanges) {
-    const matches = content.match(regex)
-    if (matches) {
-      count += matches.length
-    }
-  }
-  
-  return count
+  return toCodePoints(content).filter(isEmojiCodePoint).length
 }
 
 /**
  * 하트/사랑 이모지 개수 세기
  */
 function countHeartEmojis(content: string): number {
-  const heartPatterns = [
-    /💕/g, /❤️/g, /💖/g, /💗/g, /💘/g, /💝/g, /💞/g, /💓/g,
-    /😍/g, /🥰/g, /😘/g, /😻/g, /💋/g, /♥️/g, /❣️/g,
-    /[\u2763-\u2764]/g, // Hearts unicode range
-  ]
-
-  let count = 0
-  for (const regex of heartPatterns) {
-    const matches = content.match(regex)
-    if (matches) {
-      count += matches.length
-    }
-  }
-
-  return count
+  return toCodePoints(content).filter((codePoint) => HEART_CODE_POINTS.has(codePoint)).length
 }
 
 /**
  * 애정 표현 단어 개수 세기
  */
 function countAffectionWords(content: string): number {
+  // 서로 포함 관계인 단어(좋아/좋아해 등)는 짧은 쪽 하나만 둔다.
+  // '진짜', '너무' 같은 강조 부사는 애정 표현이 아니므로 넣지 않는다.
   const affectionWords = [
-    '사랑', '좋아', '보고싶', '그리워', '이뻐', '예쁘', '귀여워', '귀엽',
-    '멋있', '멋져', '최고', '짱', '완전', '진짜', '너무', '엄청',
-    '좋아해', '사랑해', '보고파', '그립', '이쁘', '섹시', '매력',
-    '설레', '두근', '반했', '홀렸', '빠졌', '반해', '좋음'
+    '사랑', '좋아', '보고싶', '보고파', '그리워', '그립', '이뻐', '이쁘', '예쁘',
+    '귀여워', '귀엽', '멋있', '멋져', '매력', '설레', '두근', '반했', '반해',
   ]
 
   let count = 0
@@ -304,6 +264,21 @@ export function parseKakaoChat(rawText: string): {
       })
       continue
     }
+
+    // 어떤 형식에도 맞지 않는 줄은 직전 메시지의 다음 줄(여러 줄 메시지)로 본다.
+    // 첫 메시지보다 앞에 오는 파일 머리말은 붙일 대상이 없으므로 버려진다.
+    // 단, 날짜 줄이나 "…님이 들어왔습니다" 같은 알림 줄은 메시지의 일부가 아니므로 붙이지 않는다.
+    if (PATTERNS.DATE_START.test(trimmedLine)) {
+      currentDate = parseDate(trimmedLine)
+      continue
+    }
+    if (/^-{3,}/.test(trimmedLine) || isSystemMessage(trimmedLine)) continue
+
+    const lastIndex = messages.length - 1
+    if (lastIndex >= 0) {
+      const last = messages[lastIndex]
+      messages[lastIndex] = { ...last, content: `${last.content}\n${trimmedLine}` }
+    }
   }
   
   // 참여자 목록 추출 (시스템 메시지 제외)
@@ -435,8 +410,8 @@ export function analyzeChat(messages: ParsedMessage[], participants: string[]): 
       // 다른 사람이 보낸 경우에만 답장 시간 계산
       if (prev.sender !== curr.sender && replyTimes[curr.sender]) {
         const diff = (curr.timestamp.getTime() - prev.timestamp.getTime()) / (1000 * 60)
-        // 24시간 이내의 답장만 계산
-        if (diff > 0 && diff < 1440) {
+        // 24시간 이내의 답장만 계산. 카카오톡 기록은 분 단위라 같은 분 안의 답장은 0분이다.
+        if (diff >= 0 && diff < 1440) {
           replyTimes[curr.sender].push(diff)
         }
       }

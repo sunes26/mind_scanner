@@ -1,11 +1,14 @@
+import type { BalanceFinding, DimensionResult, ScoringInput } from './scoring'
+
 export interface ChatData {
-  rawText: string
   p1: string
   p2: string
   countP1: number
   countP2: number
   total: number
   analysis?: ChatAnalysis
+  /** 서버 채점에 보내는 통계(숫자만) */
+  scoringInput?: ScoringInput
 }
 
 export interface ChatAnalysis {
@@ -57,12 +60,12 @@ export interface AnalysisResult {
       description: string
     }
   }
-  mutualPerception?: {
-    [name: string]: {
-      thinkingAboutYou: string
-      youThinkingAbout: string
-    }
-  }
+  /** 참여·표현을 바탕으로 한 관심도 지수 (0~100) */
+  interestScore?: number
+  /** 항목별 수준 */
+  dimensions?: DimensionResult[]
+  /** 관계 균형 진단 */
+  balance?: BalanceFinding[]
 }
 
 export type ScreenType = 'home' | 'loading' | 'result' | 'error'
@@ -126,8 +129,8 @@ export const ERROR_MESSAGES: Record<ErrorType, Omit<AppError, 'type'>> = {
     canRetry: false,
   },
   API_ERROR: {
-    title: 'AI 분석 실패',
-    message: 'AI 서버에서 응답을 받지 못했어요.',
+    title: '분석 실패',
+    message: '서버에서 분석 결과를 받지 못했어요.',
     suggestion: '잠시 후 다시 시도해주세요. 문제가 계속되면 새로고침 후 다시 시도해주세요.',
     canRetry: true,
   },

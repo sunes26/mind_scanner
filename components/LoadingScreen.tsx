@@ -1,8 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ChatData, AnalysisResult, AppError } from '@/types'
-import { detectLanguage } from '@/utils/language'
+import type { ScoringResult } from '@/types/scoring'
+import { toAnalysisResult } from '@/utils/resultMapping'
 import { useLanguage } from '@/contexts/LanguageContext'
 
 interface LoadingScreenProps {
@@ -19,7 +20,11 @@ export default function LoadingScreen({ chatData, onComplete, onError }: Loading
   const [progress, setProgress] = useState(0)
   const [detailText, setDetailText] = useState(loadingMessages[0])
 
+  // 화면이 사라진 뒤(또는 개발 모드의 이중 실행)에는 완료·오류 콜백을 부르지 않는다
+  const cancelledRef = useRef(false)
+
   useEffect(() => {
+    cancelledRef.current = false
     let currentStep = 0
     const interval = setInterval(() => {
       setDetailText(loadingMessages[currentStep])
@@ -35,27 +40,25 @@ export default function LoadingScreen({ chatData, onComplete, onError }: Loading
     // 즉시 분석 시작 (멘트와 병렬로)
     performAnalysis(interval)
 
-    return () => clearInterval(interval)
+    return () => {
+      cancelledRef.current = true
+      clearInterval(interval)
+    }
   }, [])
 
   const performAnalysis = async (interval: NodeJS.Timeout) => {
     try {
-      // Detect user's language
-      const language = detectLanguage()
+      if (!chatData.scoringInput) {
+        throw new Error('scoring input missing')
+      }
 
-      // Call actual AI analysis API
+      // 서버에는 숫자 통계만 보낸다. 대화 원문과 이름은 브라우저를 떠나지 않는다.
       const response = await fetch('/api/analyze', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          rawText: chatData.rawText,
-          p1: chatData.p1,
-          p2: chatData.p2,
-          analysis: chatData.analysis,
-          language, // Add language parameter
-        }),
+        body: JSON.stringify({ stats: chatData.scoringInput }),
       })
 
       if (!response.ok) {
@@ -75,7 +78,10 @@ export default function LoadingScreen({ chatData, onComplete, onError }: Loading
         throw new Error('API request failed')
       }
 
-      const result: AnalysisResult = await response.json()
+      const scoring: ScoringResult = await response.json()
+      const result: AnalysisResult = toAnalysisResult(scoring, chatData.p1, chatData.p2)
+
+      if (cancelledRef.current) return
 
       // 멘트 interval 즉시 중단
       clearInterval(interval)
@@ -86,15 +92,16 @@ export default function LoadingScreen({ chatData, onComplete, onError }: Loading
 
       // 1초 후 결과 화면으로 전환
       setTimeout(() => {
-        onComplete(result)
+        if (!cancelledRef.current) onComplete(result)
       }, 1000)
     } catch (error) {
+      if (cancelledRef.current) return
       console.error('Analysis error:', error)
       clearInterval(interval)
       onError({
         type: 'API_ERROR',
-        title: 'AI 분석 실패',
-        message: 'AI 서버에서 응답을 받지 못했습니다.',
+        title: '분석 실패',
+        message: '분석 서버에서 응답을 받지 못했습니다.',
         suggestion: '잠시 후 다시 시도해주세요. 문제가 계속되면 새로고침 후 다시 시도해주세요.',
         canRetry: true
       })
