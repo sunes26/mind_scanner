@@ -9,7 +9,8 @@
 }
 
 body {
-  font-family: var(--font-noto-sans-kr), sans-serif;
+  /* 본문은 기기 기본 한글 글꼴 (웹폰트 다운로드 없음) */
+  font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Pretendard', 'Noto Sans KR', 'Malgun Gothic', 'Segoe UI', Roboto, sans-serif;
   background-color: #F0F4F8;
   background-image: radial-gradient(#CBD5E1 1.5px, transparent 1.5px);
   background-size: 32px 32px;
@@ -36,7 +37,7 @@ h1, h2, h3, .font-display {
 
 .neo-btn {
   border: 3px solid black;
-  font-family: 'Jua', sans-serif;
+  font-family: var(--font-jua), sans-serif;
   box-shadow: 4px 4px 0px 0px black;
   transition: all 0.1s ease;
 }

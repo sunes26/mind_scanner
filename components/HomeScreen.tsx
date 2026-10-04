@@ -401,7 +401,7 @@ export default function HomeScreen({ onFileUpload, onError, latestPosts }: HomeS
           </div>
         </div>
         <div className="text-center mt-8">
-          <Link href="/sample" className="neo-badge inline-block px-5 py-3 bg-[#FFD233] rounded-full font-bold hover:bg-yellow-400 transition-colors">
+          <Link href="/sample" prefetch={false} className="neo-badge inline-block px-5 py-3 bg-[#FFD233] rounded-full font-bold hover:bg-yellow-400 transition-colors">
             가상의 대화로 만든 샘플 리포트 보기 →
           </Link>
         </div>

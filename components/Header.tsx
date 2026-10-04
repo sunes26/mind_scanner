@@ -76,7 +76,7 @@ export default function Header({ currentScreen = 'home', onNavigateHome }: Heade
           >
             {t.header.faq}
           </button>
-          <Link href="/sample" onClick={confirmLeaveResult} className="font-bold hover:underline whitespace-nowrap">
+          <Link href="/sample" prefetch={false} onClick={confirmLeaveResult} className="font-bold hover:underline whitespace-nowrap">
             샘플 리포트
           </Link>
           <Link href="/blog" onClick={confirmLeaveResult} className="font-bold hover:underline whitespace-nowrap">

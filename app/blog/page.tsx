@@ -131,6 +131,7 @@ export default function BlogPage() {
             </Link>
             <Link
               href="/sample"
+              prefetch={false}
               className="inline-block bg-white border-2 border-black text-black px-6 py-3 rounded-xl font-bold hover:bg-gray-100 transition-colors"
             >
               샘플 리포트 보기

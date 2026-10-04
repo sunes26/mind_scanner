@@ -27,6 +27,7 @@ export default function NotFound() {
               <li key={link.href}>
                 <Link
                   href={link.href}
+                  prefetch={false}
                   className="block bg-[#FFD233] border-2 border-black px-5 py-3 rounded-xl font-bold hover:bg-yellow-400 transition-colors"
                 >
                   {link.label}
