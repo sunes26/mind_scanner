@@ -10,7 +10,7 @@ const config: Config = {
     extend: {
       fontFamily: {
         display: ['var(--font-jua)', 'sans-serif'],
-        sans: ['var(--font-noto-sans-kr)', 'sans-serif'],
+        sans: ["-apple-system", "BlinkMacSystemFont", "'Apple SD Gothic Neo'", "'Pretendard'", "'Noto Sans KR'", "'Malgun Gothic'", "'Segoe UI'", "Roboto", "sans-serif"],
       },
       animation: {
         'heart-beat': 'heartBeat 1.5s infinite',

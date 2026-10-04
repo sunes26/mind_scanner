@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
-import Script from 'next/script'
-import { Noto_Sans_KR, Jua } from 'next/font/google'
+import { Jua } from 'next/font/google'
 import { GoogleAnalytics } from '@next/third-parties/google'
 import { Analytics } from '@vercel/analytics/next'
 import { LanguageProvider } from '@/contexts/LanguageContext'
@@ -9,15 +8,8 @@ import JsonLd from '@/components/site/JsonLd'
 import { DEFAULT_OG_IMAGE, SITE_URL, siteConfig } from '@/config/seo'
 import './globals.css'
 
-// 폰트 최적화
-const notoSansKr = Noto_Sans_KR({
-  subsets: ['latin'],
-  weight: ['400', '700', '900'],
-  display: 'swap',
-  preload: true,
-  variable: '--font-noto-sans-kr',
-})
-
+// 제목용 글꼴(Jua)만 웹폰트로 불러온다. 본문은 기기에 설치된 한글 글꼴을 쓴다(globals.css).
+// 본문까지 웹폰트로 받으면 한글 글꼴 조각 20여 개(약 350KB)를 첫 화면에서 내려받게 된다.
 const jua = Jua({
   subsets: ['latin'],
   weight: '400',
@@ -115,15 +107,9 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="ko" className={`${notoSansKr.variable} ${jua.variable}`}>
+    <html lang="ko" className={jua.variable}>
       <head>
         <JsonLd data={siteJsonLd} />
-
-        {/* 카카오 SDK */}
-        <Script
-          src="https://t1.kakaocdn.net/kakao_js_sdk/2.6.0/kakao.min.js"
-          strategy="lazyOnload"
-        />
 
         {/* Favicon */}
         <link rel="icon" href="/icon.svg" type="image/svg+xml" />

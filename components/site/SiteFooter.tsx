@@ -17,7 +17,7 @@ export default function SiteFooter() {
       <div className="max-w-6xl mx-auto px-4 text-center space-y-3">
         <nav aria-label="사이트 링크" className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-gray-600">
           {FOOTER_LINKS.map((link) => (
-            <Link key={link.href} href={link.href} className="underline hover:text-black transition-colors">
+            <Link key={link.href} href={link.href} prefetch={false} className="underline hover:text-black transition-colors">
               {link.label}
             </Link>
           ))}

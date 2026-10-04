@@ -20,7 +20,7 @@ export default function SiteHeader() {
         </Link>
         <nav className="flex gap-3 md:gap-5 text-sm md:text-base" aria-label="주요 메뉴">
           {NAV_ITEMS.map((item) => (
-            <Link key={item.href} href={item.href} className="font-bold hover:underline whitespace-nowrap">
+            <Link key={item.href} href={item.href} prefetch={false} className="font-bold hover:underline whitespace-nowrap">
               {item.label}
             </Link>
           ))}

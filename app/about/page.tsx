@@ -102,7 +102,7 @@ export default function AboutPage() {
           </ul>
           <p className="text-gray-700 leading-relaxed mt-4">
             실제 결과 화면은{' '}
-            <Link href="/sample" className="underline text-blue-700">
+            <Link href="/sample" prefetch={false} className="underline text-blue-700">
               샘플 리포트
             </Link>
             에서 볼 수 있습니다.

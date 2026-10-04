@@ -35,25 +35,68 @@ ${data.relation}
 나도 분석하러 가기 👉`
 }
 
+const KAKAO_SDK_URL = 'https://t1.kakaocdn.net/kakao_js_sdk/2.6.0/kakao.min.js'
+
+interface KakaoSdk {
+  isInitialized: () => boolean
+  init: (appKey: string) => void
+  Share: { sendDefault: (options: Record<string, unknown>) => void }
+}
+
+let kakaoSdkPromise: Promise<KakaoSdk> | null = null
+
+/** 카카오 SDK를 처음 공유할 때 한 번만 불러온다 (모든 페이지에서 미리 받지 않는다) */
+function loadKakaoSdk(): Promise<KakaoSdk> {
+  const existing = (window as unknown as { Kakao?: KakaoSdk }).Kakao
+  if (existing) return Promise.resolve(existing)
+
+  if (!kakaoSdkPromise) {
+    kakaoSdkPromise = new Promise<KakaoSdk>((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = KAKAO_SDK_URL
+      script.async = true
+      script.onload = () => {
+        const loaded = (window as unknown as { Kakao?: KakaoSdk }).Kakao
+        if (loaded) resolve(loaded)
+        else reject(new Error('Kakao SDK did not initialise'))
+      }
+      script.onerror = () => {
+        // 다음 시도에서 다시 불러올 수 있게 비워 둔다
+        kakaoSdkPromise = null
+        script.remove()
+        reject(new Error('Kakao SDK failed to load'))
+      }
+      document.head.appendChild(script)
+    })
+  }
+  return kakaoSdkPromise
+}
+
 // 카카오톡 공유
-export function shareToKakao(data: ShareData): void {
+export async function shareToKakao(data: ShareData): Promise<void> {
   if (typeof window === 'undefined') return
-  
-  const Kakao = (window as any).Kakao
-  
-  if (!Kakao) {
-    alert('카카오톡 SDK가 로드되지 않았습니다.')
+
+  const appKey = process.env.NEXT_PUBLIC_KAKAO_APP_KEY
+  if (!appKey) {
+    alert('카카오톡 공유가 설정되지 않았습니다. 링크 복사를 이용해 주세요.')
     return
   }
-  
-  if (!Kakao.isInitialized()) {
-    // 카카오 앱 키로 초기화 (실제 앱 키로 교체 필요)
-    Kakao.init(process.env.NEXT_PUBLIC_KAKAO_APP_KEY || 'YOUR_KAKAO_APP_KEY')
+
+  let Kakao: KakaoSdk
+  try {
+    Kakao = await loadKakaoSdk()
+  } catch {
+    alert('카카오톡 공유를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.')
+    return
   }
-  
+
+  if (!Kakao.isInitialized()) {
+    Kakao.init(appKey)
+  }
+
   const shareUrl = generateShareUrl(data)
   const imageUrl = generateOgImageUrl(data)
-  
+
   Kakao.Share.sendDefault({
     objectType: 'feed',
     content: {

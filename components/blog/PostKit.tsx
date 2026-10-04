@@ -168,7 +168,7 @@ export function PostLink({ slug, children }: { slug: string; children: ReactNode
 
 export function SampleLink({ children }: { children: ReactNode }) {
   return (
-    <Link href="/sample" className="text-blue-700 underline hover:text-blue-900">
+    <Link href="/sample" prefetch={false} className="text-blue-700 underline hover:text-blue-900">
       {children}
     </Link>
   )
